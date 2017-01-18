@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:rdb="http://www.dangdang.com/schema/ddframe/rdb"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                        http://www.springframework.org/schema/beans/spring-beans.xsd
+                        http://www.dangdang.com/schema/ddframe/rdb
+                        http://www.dangdang.com/schema/ddframe/rdb/rdb.xsd">
+    <rdb:strategy id="fsStHisStrategy" sharding-columns="code" algorithm-class="sharejdbc.StockSingleKeyTableShardingAlgorithm"/>
+    <rdb:strategy id="fsStPkStrategy" sharding-columns="code" algorithm-class="sharejdbc.StockSingleKeyTableShardingAlgorithm"/>
+    <rdb:data-source id="shardingDataSource">
+        <rdb:sharding-rule data-sources="dataSourceCommon">
+            <rdb:table-rules>
+                <rdb:table-rule logic-table="fs_st_his_data_v" actual-tables="fs_st_his_data_v_${0..40}" table-strategy="fsStHisStrategy"/>
+                <rdb:table-rule logic-table="fs_st_pk_data_v" actual-tables="fs_st_pk_data_v_${0..40}" table-strategy="fsStPkStrategy"/>
+            </rdb:table-rules>
+            <rdb:default-database-strategy sharding-columns="none" algorithm-class="com.dangdang.ddframe.rdb.sharding.api.strategy.database.NoneDatabaseShardingAlgorithm"/>
+        </rdb:sharding-rule>
+    </rdb:data-source>
+</beans>
