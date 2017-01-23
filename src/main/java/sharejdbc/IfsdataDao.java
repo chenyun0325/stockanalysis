@@ -11,6 +11,8 @@ public interface IfsdataDao {
 
   void save(FsModel item);
 
+  int batchDelete(String code,String startDate,String endDate);
+
   void batchSave(List<FsModel> itemList);
 
   List<FsModel> query(String code,String startDate,String endDate);

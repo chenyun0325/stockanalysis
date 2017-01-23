@@ -21,7 +21,7 @@ import fsrealanalysis.FsData;
 public class FsPkDataDaoImpl extends JdbcDaoSupport implements IfsPkDataDao {
 
   String insertSql =
-      "insert into fs_st_pk_data_v values(:timestamp,:date,:time,:name,:open,:pre_close,:price,:high,:low,:bid,:ask,:volume,:amount,:b1_v,:b1_p,:b2_v,:b2_p,:b3_v,:b3_p,:b4_v,:b4_p,:b5_v,:b5_p)";
+      "insert into fs_st_pk_data_v(timestamp,date,time,code,name,open,pre_close,price,high,low,bid,ask,volume,amount,b1_v,b1_p,b2_v,b2_p,b3_v,b3_p,b4_v,b4_p,b5_v,b5_p) values(:timestamp,:date,:time,:code,:name,:open,:pre_close,:price,:high,:low,:bid,:ask,:volume,:amount,:b1_v,:b1_p,:b2_v,:b2_p,:b3_v,:b3_p,:b4_v,:b4_p,:b5_v,:b5_p)";
 
 
   @Override
@@ -56,6 +56,7 @@ public class FsPkDataDaoImpl extends JdbcDaoSupport implements IfsPkDataDao {
       fsData.setTimestamp(rs.getLong("timestamp"));
       fsData.setDate(rs.getString("date"));
       fsData.setTime(rs.getString("time"));
+      fsData.setCode(rs.getString("code"));
       fsData.setName(rs.getString("name"));
       fsData.setOpen(rs.getDouble("open"));
       fsData.setPre_close(rs.getDouble("pre_close"));

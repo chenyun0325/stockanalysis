@@ -6,29 +6,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 import fsanalysis.FsModel;
+import fsrealanalysis.FsData;
 import stormpython.FsPkDataBootStrapSpring;
 
 /**
  * Created by cy111966 on 2017/1/15.
  */
-public class ShareJDBCTest {
+public class ShareJDBCTest1 {
 
   public static void main(String[] args) {
     try {
       ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
-      IfsdataDao fsdao = ctx.getBean("fsDao", IfsdataDao.class);
-      List<FsModel> fsList = new ArrayList<>();
-      for (int i=350;i<450;i++){
-        FsModel item = new FsModel();
-        item.setCode("stock"+i);
-        item.setChange("change"+i);
-        item.setVolume(i);
-        item.setAmount(i);
+      IfsPkDataDao fsdao = ctx.getBean("fsPkDao", IfsPkDataDao.class);
+      List<FsData> fsList = new ArrayList<>();
+      for (int i=3500;i<4500;i++){
+        FsData item = new FsData();
+        item.setName("xxxxxx"+i);
+        item.setB1_v(1);
         fsList.add(item);
       }
       fsdao.batchSave(fsList);
-      FsPkDataBootStrapSpring fsPkDbThread = ctx.getBean("fsPkDbThread", FsPkDataBootStrapSpring.class);
-      fsPkDbThread.stopNode();
+//      FsPkDataBootStrapSpring fsPkDbThread = ctx.getBean("fsPkDbThread", FsPkDataBootStrapSpring.class);
+//      fsPkDbThread.stopNode();
 //      FsModel item = new FsModel();
 //      item.setCode("stock"+1);
 //      item.setChange("change"+1);

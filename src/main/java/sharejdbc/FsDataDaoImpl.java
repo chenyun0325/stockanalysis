@@ -18,8 +18,9 @@ import fsanalysis.FsModel;
  */
 public class FsDataDaoImpl extends JdbcDaoSupport implements IfsdataDao {
 
-  String insertSql =
-      "insert into fs_st_his_data_v(code,date,time,price,`change`,volume,amount,type)values(?,?,?,?,?,?,?,?)";
+  String insertSql = "insert into fs_st_his_data_v(code,date,time,price,`change`,volume,amount,type)values(?,?,?,?,?,?,?,?)";
+
+  String delSql = "delete from fs_st_his_data_v where code =? and date>=? and date<=? ";
 
   @Override
   public void save(final FsModel item) {
@@ -28,17 +29,23 @@ public class FsDataDaoImpl extends JdbcDaoSupport implements IfsdataDao {
     getJdbcTemplate().update(insertSql, new PreparedStatementSetter() {
       @Override
       public void setValues(PreparedStatement ps) throws SQLException {
-        ps.setString(1,item.getCode());
-        ps.setString(2,item.getDate());
-        ps.setString(3,item.getTime());
-        ps.setDouble(4,item.getPrice());
-        ps.setString(5,item.getChange());
-        ps.setLong(6,item.getVolume());
-        ps.setLong(7,item.getAmount());
-        ps.setString(8,item.getType());
+        ps.setString(1, item.getCode());
+        ps.setString(2, item.getDate());
+        ps.setString(3, item.getTime());
+        ps.setDouble(4, item.getPrice());
+        ps.setString(5, item.getChange());
+        ps.setLong(6, item.getVolume());
+        ps.setLong(7, item.getAmount());
+        ps.setString(8, item.getType());
         System.out.println(ps.toString());
       }
     });
+  }
+
+  @Override
+  public int batchDelete(String code, String startDate, String endDate) {
+    int count = getJdbcTemplate().update(delSql, new Object[]{code, startDate, endDate});
+    return count;
   }
 
   @Override
@@ -46,14 +53,14 @@ public class FsDataDaoImpl extends JdbcDaoSupport implements IfsdataDao {
     getJdbcTemplate().batchUpdate(insertSql, new BatchPreparedStatementSetter() {
       @Override
       public void setValues(PreparedStatement ps, int i) throws SQLException {
-        ps.setString(1,itemList.get(i).getCode());
-        ps.setString(2,itemList.get(i).getDate());
-        ps.setString(3,itemList.get(i).getTime());
-        ps.setDouble(4,itemList.get(i).getPrice());
-        ps.setString(5,itemList.get(i).getChange());
-        ps.setLong(6,itemList.get(i).getVolume());
-        ps.setLong(7,itemList.get(i).getAmount());
-        ps.setString(8,itemList.get(i).getType());
+        ps.setString(1, itemList.get(i).getCode());
+        ps.setString(2, itemList.get(i).getDate());
+        ps.setString(3, itemList.get(i).getTime());
+        ps.setDouble(4, itemList.get(i).getPrice());
+        ps.setString(5, itemList.get(i).getChange());
+        ps.setLong(6, itemList.get(i).getVolume());
+        ps.setLong(7, itemList.get(i).getAmount());
+        ps.setString(8, itemList.get(i).getType());
         System.err.println(ps.toString());
       }
 

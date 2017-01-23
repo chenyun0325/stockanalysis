@@ -6,6 +6,7 @@ import org.apache.storm.generated.AuthorizationException;
 import org.apache.storm.topology.BoltDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import datacrawler.Constant;
 
@@ -23,6 +24,9 @@ public class StockStorm {
     String price_dif_var1=args[7];
     String amount1=args[8];
 
+    //启动异步数据存储线程
+    ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
+    ctx.start();
     TopologyBuilder builder = new TopologyBuilder();
     Bolt2 bolt = new Bolt2(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
@@ -30,8 +34,7 @@ public class StockStorm {
     // Split bolt splits sentences and emits words
     splitBolt.fieldsGrouping("FsRealSpout" , new Fields("code"));
     builder.setBolt("slidBolt", new SlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
-        .fieldsGrouping("SplitBolt", new Fields
-            ("code"));
+        .fieldsGrouping("SplitBolt", new Fields("code"));
 
     // Counter consumes words and emits words and counts
     // FieldsGrouping is used so the same words get routed
@@ -46,6 +49,7 @@ public class StockStorm {
 
     LocalCluster cluster = new LocalCluster();
     cluster.submitTopology("test", conf, builder.createTopology());
+
 //    // If there are arguments, we must be on a cluster
 //    if (args != null && args.length > 0) {
 //      conf.setNumWorkers(3);

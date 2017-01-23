@@ -9,6 +9,7 @@ public class FsData {
   private String date;
   private String time;
   private String name;
+  private String code;
   private double open;
   private double pre_close;
   private double price;
@@ -38,6 +39,14 @@ public class FsData {
   private double a4_p;
   private int a5_v;
   private double a5_p;
+
+  public String getCode() {
+    return code;
+  }
+
+  public void setCode(String code) {
+    this.code = code;
+  }
 
   public long getTimestamp() {
     return timestamp;

@@ -8,17 +8,41 @@
     <artifactId>stock</artifactId>
     <version>1.0-SNAPSHOT</version>
     <properties>
-        <log_api_version>1.5.6</log_api_version>
-        <log4j_version>1.2.15</log4j_version>
+        <log_api_version>1.6.6</log_api_version>
+        <log4j_version>1.2.16</log4j_version>
         <spring_version>4.2.4.RELEASE</spring_version>
         <mybatis_version>3.2.8</mybatis_version>
         <mysql-connector-java_version>5.1.30</mysql-connector-java_version>
         <druid_version>1.0.13</druid_version>
-        <storm.topology>stormpython.WordCount</storm.topology>
         <sharding-jdbc_version>1.4.1</sharding-jdbc_version>
+        <jettyVersion>	9.2.20.v20161216</jettyVersion>
     </properties>
 
     <dependencies>
+
+
+        <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>1.8.5</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-webapp</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
+        <!-- spring 启动jetty容器-->
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-spring</artifactId>
+            <version>${jettyVersion}</version>
+        </dependency>
 
         <!--<dependency>-->
         <!--<groupId>net.sf.json-lib</groupId>-->
@@ -107,20 +131,20 @@
             <version>2.1.3</version>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>cglib</groupId>-->
-            <!--<artifactId>cglib-nodep</artifactId>-->
-            <!--<version>2.2</version>-->
+        <!--<groupId>cglib</groupId>-->
+        <!--<artifactId>cglib-nodep</artifactId>-->
+        <!--<version>2.2</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
-            <!--<groupId>asm</groupId>-->
-            <!--<artifactId>asm</artifactId>-->
-            <!--<version>2.2</version>-->
+        <!--<groupId>asm</groupId>-->
+        <!--<artifactId>asm</artifactId>-->
+        <!--<version>2.2</version>-->
         <!--</dependency>-->
 
         <!--<dependency>-->
-            <!--<groupId>antlr</groupId>-->
-            <!--<artifactId>antlr</artifactId>-->
-            <!--<version>2.7.1</version>-->
+        <!--<groupId>antlr</groupId>-->
+        <!--<artifactId>antlr</artifactId>-->
+        <!--<version>2.7.1</version>-->
         <!--</dependency>-->
 
         <dependency>
@@ -158,6 +182,42 @@
             <artifactId>spring-jdbc</artifactId>
             <version>${spring_version}</version>
         </dependency>
+        <!-- 添加json输出部分-->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring_version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-web</artifactId>
+            <version>${spring_version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+            <version>1.9.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+            <version>1.9.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>2.4.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.4.3</version>
+        </dependency>
+
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
@@ -166,9 +226,9 @@
             <classifier>indy</classifier>
         </dependency>
         <!--<dependency>-->
-            <!--<groupId>groovy</groupId>-->
-            <!--<artifactId>groovy</artifactId>-->
-            <!--<version>1.1-beta-2</version>-->
+        <!--<groupId>groovy</groupId>-->
+        <!--<artifactId>groovy</artifactId>-->
+        <!--<version>1.1-beta-2</version>-->
         <!--</dependency>-->
         <!--<dependency>-->
         <!--<groupId>org.apache.storm</groupId>-->
@@ -248,6 +308,9 @@
                     <include>**/*.py</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>src/main/webapp</directory>
+            </resource>
         </resources>
         <plugins>
             <plugin>
@@ -273,9 +336,30 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>stormpython.WordCount</mainClass>
+                                    <mainClass>weblauncher.LauncherJar</mainClass>
+                                </transformer>
+                                <!-- 附加方式而不是覆盖-->
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.handlers</resource>
+                                </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                                    <resource>META-INF/spring.schemas</resource>
                                 </transformer>
                             </transformers>
+                            <!--提示找不到license文件 -->
+                            <filters>
+                                <filter>
+                                    <artifact>*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/LICENSE</exclude> <!-- conflicts on OS X with license/) -->
+                                        <exclude>LICENSE</exclude>
+                                        <!--<exclude>META-INF/licenses</exclude>-->
+                                        <!--<exclude>META-INF/license</exclude>-->
+                                    </excludes>
+                                </filter>
+                            </filters>
                         </configuration>
                     </execution>
                 </executions>

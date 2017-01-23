@@ -11,10 +11,10 @@
     <rdb:data-source id="shardingDataSource">
         <rdb:sharding-rule data-sources="dataSourceCommon">
             <rdb:table-rules>
-                <rdb:table-rule logic-table="fs_st_his_data_v" actual-tables="fs_st_his_data_v_${0..40}" table-strategy="fsStHisStrategy"/>
-                <rdb:table-rule logic-table="fs_st_pk_data_v" actual-tables="fs_st_pk_data_v_${0..40}" table-strategy="fsStPkStrategy"/>
+                <rdb:table-rule logic-table="fs_st_his_data_v" actual-tables="fs_st_his_data_v_${0..39}" table-strategy="fsStHisStrategy"/>
+                <rdb:table-rule logic-table="fs_st_pk_data_v" actual-tables="fs_st_pk_data_v_${0..39}" table-strategy="fsStPkStrategy"/>
             </rdb:table-rules>
-            <rdb:default-database-strategy sharding-columns="none" algorithm-class="com.dangdang.ddframe.rdb.sharding.api.strategy.database.NoneDatabaseShardingAlgorithm"/>
+            <!--<rdb:default-database-strategy sharding-columns="none" algorithm-class="com.dangdang.ddframe.rdb.sharding.api.strategy.database.NoneDatabaseShardingAlgorithm"/>-->
         </rdb:sharding-rule>
     </rdb:data-source>
 </beans>

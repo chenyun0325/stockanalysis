@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd" >
+
+    <!-- 使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法-->
+    <!-- 定义目标bean和bean中的方法 -->
+    <bean id="deleteTokenJob" class="com.youzan.carmen.quartz.DeleteTokenJob"/>
+    <bean id="deleteRefreshTokenJob" class="com.youzan.carmen.quartz.DeleteRefreshTokenJob"/>
+
+    <bean id="deleteTokenMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="deleteTokenJob"/>
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>execute</value>
+        </property>
+        <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="deleteRefreshTokenMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="deleteRefreshTokenJob"/>
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>execute</value>
+        </property>
+        <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
+            <value>false</value>
+        </property>
+    </bean>
+
+
+    <!-- ======================== 调度触发器 ======================== -->
+    <bean id="deleteTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="deleteTokenMethod"></property>
+        <property name="cronExpression" value="0 0 9 * * ?"></property>
+    </bean>
+
+    <bean id="deleteRefreshTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="deleteRefreshTokenMethod"></property>
+        <property name="cronExpression" value="0 0 10 * * ?"></property>
+    </bean>
+    <!-- ======================== 调度工厂 ======================== -->
+    <bean id="SpringJobSchedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+        <property name="triggers">
+            <list>
+                <ref bean="deleteTokenTrigger"/>
+                <ref bean="deleteRefreshTokenTrigger"/>
+            </list>
+        </property>
+    </bean>
+
+</beans>

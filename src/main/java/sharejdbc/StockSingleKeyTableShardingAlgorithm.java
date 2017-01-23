@@ -22,7 +22,8 @@ public class StockSingleKeyTableShardingAlgorithm implements SingleKeyTableShard
       System.err.println(vHash);
       System.err.println(vHash % tableSize);
       for (String tableName : tableNames) {
-        if (tableName.endsWith(vHash % tableSize + "")) {
+        String num = getNum(tableName, "_");
+        if (num.equals(vHash % tableSize + "")) {
           System.err.println(tableName);
           return tableName;
         }
@@ -38,7 +39,8 @@ public class StockSingleKeyTableShardingAlgorithm implements SingleKeyTableShard
       for (String value : values) {
         int vHash = newCompatHashingAlg(value);
         for (String tableName : tableNames) {
-          if (tableName.endsWith(vHash % tableSize + "")) {
+          String num = getNum(tableName, "_");
+          if (num.equals(vHash % tableSize + "")) {
             tablesRes.add(tableName);
           }
         }
@@ -57,4 +59,11 @@ public class StockSingleKeyTableShardingAlgorithm implements SingleKeyTableShard
       int crc = (int) checksum.getValue();
       return (crc >> 16) & 0x7fff;
     }
+
+   private static String getNum(String tableName,String split){
+     int last = tableName.lastIndexOf(split)+1;
+     String num = tableName.substring(last, tableName.length());
+     System.out.println(num);
+     return num;
+   }
 }
