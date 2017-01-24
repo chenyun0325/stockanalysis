@@ -10,5 +10,6 @@
     <import resource="classpath*:app-datasource.xml"/>
     <import resource="classpath*:app-datasource-jdbc.xml"/>
     <import resource="classpath*:app-datasource-sharejdbc.xml"/>
+    <import resource="classpath*:app-quartz.xml"/>
 
 </beans>

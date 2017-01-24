@@ -15,10 +15,6 @@ def fs_load(code =None,date =None,retry_count =5,pause=1):
         param = {}
         param['code'] = code
         param['date'] = date
-        try:
-            pd.read_sql_query('delete FROM db_test.fs_st_data  where code=%(code)s and date=%(date)s',sql.engine, params=param)
-        except Exception, e:
-            log.error(traceback.print_exc())
         df=ts.get_today_ticks(code=code,retry_count=retry_count,pause=pause)
         df.drop('pchange',axis=1,inplace=True)
     else:

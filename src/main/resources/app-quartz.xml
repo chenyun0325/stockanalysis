@@ -5,27 +5,54 @@
 
     <!-- 使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法-->
     <!-- 定义目标bean和bean中的方法 -->
-    <bean id="deleteTokenJob" class="com.youzan.carmen.quartz.DeleteTokenJob"/>
-    <bean id="deleteRefreshTokenJob" class="com.youzan.carmen.quartz.DeleteRefreshTokenJob"/>
+    <bean id="fsDelayTaskJob" class="weblauncher.task.FsLoadQuartzDelayTask">
+        <property name="stockList" value="000798"/>
+        <property name="batchsize" value="10"/>
+        <property name="dbBatchSize" value="500"/>
+        <property name="shellFile" value="fsdata_load.py"/>
+        <property name="fsdataDao" ref="fsDao"/>
+        <property name="period" value="14"/>
+        <property name="timeout" value="3600000"/>
+    </bean>
+    <bean id="fsTaskJob" class="weblauncher.task.FsLoadQuartzTask">
+        <property name="sleepTime" value="3000"/>
+        <property name="stockList" value="000798"/>
+        <property name="batchsize" value="10"/>
+        <property name="dbBatchSize" value="500"/>
+        <property name="shellFile" value="fsdata_load.py"/>
+        <property name="fsdataDao" ref="fsDao"/>
+    </bean>
 
-    <bean id="deleteTokenMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+    <bean id="fsDelayTaskJobMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject">
-            <ref bean="deleteTokenJob"/>
+            <ref bean="fsDelayTaskJob"/>
         </property>
         <property name="targetMethod">  <!-- 要执行的方法名称 -->
-            <value>execute</value>
+            <value>start</value>
         </property>
         <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
             <value>false</value>
         </property>
     </bean>
 
-    <bean id="deleteRefreshTokenMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+    <bean id="fsTaskJobStartMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
         <property name="targetObject">
-            <ref bean="deleteRefreshTokenJob"/>
+            <ref bean="fsTaskJob"/>
         </property>
         <property name="targetMethod">  <!-- 要执行的方法名称 -->
-            <value>execute</value>
+            <value>start</value>
+        </property>
+        <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="fsTaskJobStopMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="fsTaskJob"/>
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>stop</value>
         </property>
         <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
             <value>false</value>
@@ -34,21 +61,27 @@
 
 
     <!-- ======================== 调度触发器 ======================== -->
-    <bean id="deleteTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="deleteTokenMethod"></property>
-        <property name="cronExpression" value="0 0 9 * * ?"></property>
+    <bean id="fsTaskJobStartTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="fsTaskJobStartMethod"></property>
+        <property name="cronExpression" value="0 15 9 ? * 2-6"></property>
     </bean>
 
-    <bean id="deleteRefreshTokenTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="jobDetail" ref="deleteRefreshTokenMethod"></property>
-        <property name="cronExpression" value="0 0 10 * * ?"></property>
+    <bean id="fsTaskJobStopTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="fsTaskJobStopMethod"></property>
+        <property name="cronExpression" value="0 0 15 ? * 2-6"></property>
+    </bean>
+
+    <bean id="fsDelayTaskJobMethodTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="fsDelayTaskJobMethod"></property>
+        <property name="cronExpression" value="0 0 17 ? * 2-6"></property>
     </bean>
     <!-- ======================== 调度工厂 ======================== -->
     <bean id="SpringJobSchedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
-                <ref bean="deleteTokenTrigger"/>
-                <ref bean="deleteRefreshTokenTrigger"/>
+                <ref bean="fsDelayTaskJobMethodTrigger"/>
+                <ref bean="fsTaskJobStartTrigger"/>
+                <ref bean="fsTaskJobStopTrigger"/>
             </list>
         </property>
     </bean>

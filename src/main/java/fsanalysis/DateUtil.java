@@ -14,6 +14,7 @@ import java.util.GregorianCalendar;
 public class DateUtil {
   public static String TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
   public static String TIME_FORMAT_X="yyyyMMdd";
+  public static String TIME_FORMAT_Y="yyyy-MM-dd";
   public static long convert2long(String date, String format) {
     try {
       if (StringUtils.isNotBlank(date)) {
@@ -54,6 +55,11 @@ public class DateUtil {
 
   public static String convert2dateStr(Date time)  {
     SimpleDateFormat sdf = new SimpleDateFormat(TIME_FORMAT_X);
+    String dateStr = sdf.format(time);
+    return dateStr;
+  }
+  public static String convert2FdateStr(Date time)  {
+    SimpleDateFormat sdf = new SimpleDateFormat(TIME_FORMAT_Y);
     String dateStr = sdf.format(time);
     return dateStr;
   }
