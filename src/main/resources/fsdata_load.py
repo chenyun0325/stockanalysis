@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-import tushare as ts
 import datetime
-import time
-import toptrade as tp
-import sql
-import logging as log
-import traceback
-import pandas as pd
-import sys
 import json
+import logging as log
+import sys
+import time
+import traceback
+import tushare as ts
+
+import sql
+import toptrade as tp
+
+
 def fs_load(code =None,date =None,retry_count =5,pause=1):
     cur = time.strftime('%Y-%m-%d', time.localtime(time.time()))
     if cur==date:

@@ -26,16 +26,13 @@
     <bean id="fsDao" class="sharejdbc.FsDataDaoImpl" parent="abstractShareDao"/>
     <bean id="fsPkDao" class="sharejdbc.FsPkDataDaoImpl" parent="abstractShareDao"/>
 
+    <bean id="kDao" class="sharejdbc.KdataDaoImpl" parent="abstractDao"/>
+
+    <bean id="baseDao" class="sharejdbc.StockBaseDataDaoImpl" parent="abstractDao"/>
+
     <bean id="fsPkDbThread" class="stormpython.FsPkDataBootStrapSpring" init-method="startNode" destroy-method="stopNode">
         <property name="batchSize" value="10"/>
         <property name="pkDao" ref="fsPkDao"/>
     </bean>
-
-    <!--<bean id="userDao" class="edu.shao.springJdbc.dao.impl.UserDaoImpl"-->
-          <!--parent="abstractDao" />-->
-
-    <!--<bean id="userService" class="edu.shao.springJdbc.service.impl.UserServiceImpl">-->
-        <!--<property name="userDao" ref="userDao"></property>-->
-    <!--</bean>-->
 
 </beans>

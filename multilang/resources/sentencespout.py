@@ -1,5 +1,7 @@
-import storm
 import random
+
+import storm
+
 # Define some sentences
 SENTENCES = """
 the cow jumped over the moon

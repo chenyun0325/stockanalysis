@@ -5,13 +5,25 @@
 
     <!-- 使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法-->
     <!-- 定义目标bean和bean中的方法 -->
+
+    <bean id="kDelayTaskJob" class="weblauncher.task.KLoadQuartzDelayTask">
+        <property name="stockList" value="000798"/>
+        <property name="batchsize" value="10"/>
+        <property name="dbBatchSize" value="500"/>
+        <property name="shellFile" value="kfsdata_load.py"/>
+        <property name="kdataDao" ref="kDao"/>
+        <property name="period" value="14"/>
+        <property name="timeout" value="3600000"/>
+        <property name="ktype" value="D"/>
+    </bean>
+
     <bean id="fsDelayTaskJob" class="weblauncher.task.FsLoadQuartzDelayTask">
         <property name="stockList" value="000798"/>
         <property name="batchsize" value="10"/>
         <property name="dbBatchSize" value="500"/>
         <property name="shellFile" value="fsdata_load.py"/>
         <property name="fsdataDao" ref="fsDao"/>
-        <property name="period" value="14"/>
+        <property name="period" value="3"/>
         <property name="timeout" value="3600000"/>
     </bean>
     <bean id="fsTaskJob" class="weblauncher.task.FsLoadQuartzTask">
@@ -21,6 +33,35 @@
         <property name="dbBatchSize" value="500"/>
         <property name="shellFile" value="fsdata_load.py"/>
         <property name="fsdataDao" ref="fsDao"/>
+    </bean>
+
+    <bean id="stockBasicJob" class="weblauncher.task.ShellTaskNoResQuartzTask">
+        <property name="shellFile" value="toptrade_entry.py"/>
+        <property name="args" value="5 stock_basics x append"/>
+    </bean>
+
+    <bean id="stockBasicJobMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="stockBasicJob"/>
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>start</value>
+        </property>
+        <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
+            <value>false</value>
+        </property>
+    </bean>
+
+    <bean id="kDelayTaskJobMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+        <property name="targetObject">
+            <ref bean="kDelayTaskJob"/>
+        </property>
+        <property name="targetMethod">  <!-- 要执行的方法名称 -->
+            <value>start</value>
+        </property>
+        <property name="concurrent">    <!-- false 避免前一个任务未执行完 后一个任务执行   -->
+            <value>false</value>
+        </property>
     </bean>
 
     <bean id="fsDelayTaskJobMethod" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
@@ -61,6 +102,11 @@
 
 
     <!-- ======================== 调度触发器 ======================== -->
+    <bean id="stockBasicJobTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="stockBasicJobMethod"></property>
+        <property name="cronExpression" value="0 15 9 ? * 2-6"></property>
+    </bean>
+
     <bean id="fsTaskJobStartTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="fsTaskJobStartMethod"></property>
         <property name="cronExpression" value="0 15 9 ? * 2-6"></property>
@@ -73,8 +119,15 @@
 
     <bean id="fsDelayTaskJobMethodTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="fsDelayTaskJobMethod"></property>
+        <!--<property name="cronExpression" value="0 0 17 ? * 2-6"></property>-->
+        <property name="cronExpression" value="0 */1 * * * ?"></property>
+    </bean>
+
+    <bean id="kDelayTaskJobMethodTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+        <property name="jobDetail" ref="kDelayTaskJobMethod"></property>
         <property name="cronExpression" value="0 0 17 ? * 2-6"></property>
     </bean>
+
     <!-- ======================== 调度工厂 ======================== -->
     <bean id="SpringJobSchedulerFactoryBean" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
@@ -82,6 +135,8 @@
                 <ref bean="fsDelayTaskJobMethodTrigger"/>
                 <ref bean="fsTaskJobStartTrigger"/>
                 <ref bean="fsTaskJobStopTrigger"/>
+                <ref bean="stockBasicJobTrigger"/>
+                <ref bean="kDelayTaskJobMethodTrigger"/>
             </list>
         </property>
     </bean>

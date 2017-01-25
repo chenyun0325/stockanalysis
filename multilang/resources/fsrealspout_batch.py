@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
-import storm
-import random
-import tushare as ts
-import multiprocessing
-import time
-import sys
+
 import logging as log
+import random
+import sys
 import traceback
+import tushare as ts
+
+import storm
+
 # Define some sentences
 SENTENCES = """
 the cow jumped over the moon

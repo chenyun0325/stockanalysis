@@ -5,9 +5,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import fsanalysis.FsModel;
 import fsrealanalysis.FsData;
-import stormpython.FsPkDataBootStrapSpring;
 
 /**
  * Created by cy111966 on 2017/1/15.

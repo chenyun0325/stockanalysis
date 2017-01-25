@@ -8,8 +8,6 @@ import org.apache.storm.tuple.Fields;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.io.IOException;
-
 import javax.servlet.http.HttpServletResponse;
 
 import datacrawler.Constant;

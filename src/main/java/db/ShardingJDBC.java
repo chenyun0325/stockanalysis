@@ -2,12 +2,9 @@ package db;
 
 import com.dangdang.ddframe.rdb.sharding.api.ShardingDataSourceFactory;
 import com.dangdang.ddframe.rdb.sharding.api.ShardingValue;
-import com.dangdang.ddframe.rdb.sharding.api.rule.BindingTableRule;
 import com.dangdang.ddframe.rdb.sharding.api.rule.DataSourceRule;
 import com.dangdang.ddframe.rdb.sharding.api.rule.ShardingRule;
 import com.dangdang.ddframe.rdb.sharding.api.rule.TableRule;
-import com.dangdang.ddframe.rdb.sharding.api.strategy.database.DatabaseShardingStrategy;
-import com.dangdang.ddframe.rdb.sharding.api.strategy.database.NoneDatabaseShardingAlgorithm;
 import com.dangdang.ddframe.rdb.sharding.api.strategy.table.SingleKeyTableShardingAlgorithm;
 import com.dangdang.ddframe.rdb.sharding.api.strategy.table.TableShardingStrategy;
 import com.google.common.collect.Lists;

@@ -3,16 +3,16 @@ package stormtest;
 /**
  * Created by cy111966 on 2016/12/30.
  */
-import java.util.HashMap;
-import java.util.Map;
 
-import org.apache.storm.tuple.Fields;
-import org.apache.storm.tuple.Values;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class CallLogCounterBolt implements IRichBolt {
   Map<String, Integer> counterMap;

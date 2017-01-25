@@ -1,11 +1,11 @@
 package stormpython;
 
-import java.util.Map;
-
 import org.apache.storm.task.ShellBolt;
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
+
+import java.util.Map;
 
 /*
 This is basically just defining some JVM things for Storm, such as

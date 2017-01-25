@@ -13,18 +13,20 @@ import java.util.Date;
 import java.util.List;
 
 import fsanalysis.DateUtil;
-import sharejdbc.IfsdataDao;
-import stormpython.TaskNoThread;
+import sharejdbc.IKdataDao;
+import stormpython.KTaskNoThread;
 
 /**
  * Created by cy111966 on 2017/1/24.
  * 当日分时数据 处理
  */
-public class FsLoadQuartzDelayTask implements ITask {
+public class KLoadQuartzDelayTask implements ITask {
 
   private String stockList;
 
   private String shellFile;
+
+  private String ktype="D";
 
   private int batchsize;
 
@@ -34,7 +36,15 @@ public class FsLoadQuartzDelayTask implements ITask {
 
   private int period;
 
-  private IfsdataDao fsdataDao;
+  private IKdataDao kdataDao;
+
+  public void setKdataDao(IKdataDao kdataDao) {
+    this.kdataDao = kdataDao;
+  }
+
+  public void setKtype(String ktype) {
+    this.ktype = ktype;
+  }
 
   public void setPeriod(int period) {
     this.period = period;
@@ -48,9 +58,6 @@ public class FsLoadQuartzDelayTask implements ITask {
     this.dbBatchSize = dbBatchSize;
   }
 
-  public void setFsdataDao(IfsdataDao fsdataDao) {
-    this.fsdataDao = fsdataDao;
-  }
 
   public void setShellFile(String shellFile) {
     this.shellFile = shellFile;
@@ -66,7 +73,7 @@ public class FsLoadQuartzDelayTask implements ITask {
 
   private final String split=",";
 
-  private static List<TaskNoThread> taskThreads = new ArrayList<>();
+  private static List<KTaskNoThread> taskThreads = new ArrayList<>();
 
   @Override
   public void start() {
@@ -76,7 +83,7 @@ public class FsLoadQuartzDelayTask implements ITask {
     Date begin = DateUtils.addDays(now, -period);
     String beginDate = DateUtil.convert2FdateStr(begin);
     //脚本路径
-    ProtectionDomain protectionDomain = FsLoadQuartzDelayTask.class.getProtectionDomain();
+    ProtectionDomain protectionDomain = KLoadQuartzDelayTask.class.getProtectionDomain();
     URL codeLoc = protectionDomain.getCodeSource().getLocation();
     String dir = new File(codeLoc.getFile()).getAbsolutePath();
     String path = dir + "\\" + shellFile;
@@ -85,8 +92,8 @@ public class FsLoadQuartzDelayTask implements ITask {
       //删除数据
       String[] codes = stockList.split(this.split);
       for (String code : codes) {
-        //int count = fsdataDao.batchDelete(code, beginDate, nowDate);
-        //System.out.println(count);
+        int count = kdataDao.batchDelete(code, ktype,beginDate, nowDate);
+        System.out.println(count);
       }
       int total = codes.length;
       int batch = total/batchsize;
@@ -103,10 +110,10 @@ public class FsLoadQuartzDelayTask implements ITask {
         String codeListStr = Joiner.on(",").join(codeslist);
         codeslist.clear();
         List<String> params =
-            Lists.newArrayList("python", path, codeListStr, beginDate, nowDate);
+            Lists.newArrayList("python", path, codeListStr, beginDate, nowDate,ktype);
         String cmdStr = Joiner.on(" ").join(params);
         System.out.println(cmdStr);
-        TaskNoThread shellTask = new TaskNoThread(dbBatchSize, cmdStr, fsdataDao, timeout);
+        KTaskNoThread shellTask = new KTaskNoThread(dbBatchSize, cmdStr, kdataDao, timeout);
         shellTask.startNode();//直接执行task,线程阻塞
         taskThreads.add(shellTask);
       }
@@ -117,7 +124,7 @@ public class FsLoadQuartzDelayTask implements ITask {
 
   @Override
   public void stop() {//定时任务外部调用解除io阻塞
-    for (TaskNoThread taskThread : taskThreads) {
+    for (KTaskNoThread taskThread : taskThreads) {
       taskThread.stopNode();
     }
   }

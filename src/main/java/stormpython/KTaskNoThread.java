@@ -12,20 +12,21 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import fsanalysis.FsModel;
-import sharejdbc.IfsdataDao;
+import fsanalysis.KModel;
+import sharejdbc.IKdataDao;
 
-import static stormpython.FsPythonShellLoad.jsonToBean;
+import static fsanalysis.KModel.jsonToBean;
 
 /**
  * Created by cy111966 on 2017/1/24.
+ * todo 返回脚本调用结果集
  */
-public class TaskNoThread implements Runnable, INode {
+public class KTaskNoThread implements Runnable, INode {
 
-  private static final Logger errorLog = LoggerFactory.getLogger(TaskNoThread.class);
+  private static final Logger errorLog = LoggerFactory.getLogger(KTaskNoThread.class);
   private String cmdString;
   private int batchSize = 500;
-  private IfsdataDao fsDao;
+  private IKdataDao kDao;
 
   //超时处理
   private long timeout;
@@ -33,16 +34,16 @@ public class TaskNoThread implements Runnable, INode {
   private volatile FileChannel inputChannel;
 
 
-  public TaskNoThread(int batchSize, String cmdString, IfsdataDao fsDao, long timeout) {
+  public KTaskNoThread(int batchSize, String cmdString, IKdataDao kDao, long timeout) {
     this.batchSize = batchSize;
     this.cmdString = cmdString;
-    this.fsDao = fsDao;
+    this.kDao = kDao;
     this.timeout = timeout;
   }
 
   @Override
   public void run() {
-    List<FsModel> itemList = new ArrayList<>();
+    List<KModel> itemList = new ArrayList<>();
     try {
       this.init();
       // ProcessBuilder builder = new ProcessBuilder(cmdString);
@@ -61,19 +62,19 @@ public class TaskNoThread implements Runnable, INode {
         while ((line = br.readLine()) != null) {
           System.out.println(line);
           try {
-            FsModel fsModel = jsonToBean(line);
-            itemList.add(fsModel);
+            KModel kModel = jsonToBean(line);
+            itemList.add(kModel);
           } catch (Exception e) {
             errorLog.error("tojson Error:", e);
           }
           int totalSize = itemList.size();
           if (totalSize % batchSize == 0) {
-            fsDao.batchSave(itemList);//TODO: 2017/1/25 重复key异常处理,处理一条影响一批情况，包括处理中断
+            kDao.batchSave(itemList);
             itemList.clear();
           }
         }
         //处理余量
-        fsDao.batchSave(itemList);
+        kDao.batchSave(itemList);
         BufferedReader brError = new BufferedReader(new InputStreamReader(pcsErrorStream));
         while ((line = brError.readLine()) != null) {
           System.out.println(line);

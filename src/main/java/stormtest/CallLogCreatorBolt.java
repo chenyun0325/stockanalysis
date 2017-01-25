@@ -4,18 +4,18 @@ package stormtest;
  * Created by cy111966 on 2016/12/30.
  */
 //import util packages
-import java.util.HashMap;
-import java.util.Map;
 
-import org.apache.storm.tuple.Fields;
-import org.apache.storm.tuple.Values;
 import org.apache.storm.task.OutputCollector;
 import org.apache.storm.task.TopologyContext;
-
-//import Storm IRichBolt package
 import org.apache.storm.topology.IRichBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
+import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
+import org.apache.storm.tuple.Values;
+
+import java.util.Map;
+
+//import Storm IRichBolt package
 
 //Create a class CallLogCreatorBolt which implement IRichBolt interface
 public class CallLogCreatorBolt implements IRichBolt {
