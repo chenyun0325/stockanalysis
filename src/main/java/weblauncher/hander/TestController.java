@@ -23,6 +23,11 @@ public class TestController {
     return map;
   }
 
+  @RequestMapping("/query.do")
+  public String query(){
+    return "fsanalysis_query";
+  }
+
   @RequestMapping("/hash.do")
   @ResponseBody
   public Integer keyHash(String key,int mod){

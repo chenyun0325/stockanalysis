@@ -23,7 +23,7 @@
         <property name="dbBatchSize" value="500"/>
         <property name="shellFile" value="fsdata_load.py"/>
         <property name="fsdataDao" ref="fsDao"/>
-        <property name="period" value="3"/>
+        <property name="period" value="7"/>
         <property name="timeout" value="3600000"/>
     </bean>
     <bean id="fsTaskJob" class="weblauncher.task.FsLoadQuartzTask">

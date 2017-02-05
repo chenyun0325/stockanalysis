@@ -85,8 +85,8 @@ public class FsLoadQuartzDelayTask implements ITask {
       //删除数据
       String[] codes = stockList.split(this.split);
       for (String code : codes) {
-        //int count = fsdataDao.batchDelete(code, beginDate, nowDate);
-        //System.out.println(count);
+        int count = fsdataDao.batchDelete(code, beginDate, nowDate);
+        System.out.println(count);
       }
       int total = codes.length;
       int batch = total/batchsize;

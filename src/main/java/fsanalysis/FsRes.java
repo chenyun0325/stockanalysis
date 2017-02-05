@@ -17,6 +17,107 @@ public class FsRes {
   private long amount_diff;//买卖金额差
   private long amount_var;//增量资金
 
+  //累计量计算
+  private String begin_c;//开始时间
+  private long begin_l_c;
+  private String end_c;//结束时间
+  private long end_l_c;
+  private long buy_c;//买量
+  private long sale_c;//卖量
+  private long diff_v_c;//买卖差
+  private long amount_b_c;//买入金额
+  private long amount_s_c;//卖出金额
+  private long amount_diff_c;//买卖金额差
+  private long amount_var_c;//增量资金
+
+  public long getAmount_b_c() {
+    return amount_b_c;
+  }
+
+  public void setAmount_b_c(long amount_b_c) {
+    this.amount_b_c = amount_b_c;
+  }
+
+  public long getAmount_diff_c() {
+    return amount_diff_c;
+  }
+
+  public void setAmount_diff_c(long amount_diff_c) {
+    this.amount_diff_c = amount_diff_c;
+  }
+
+  public long getAmount_s_c() {
+    return amount_s_c;
+  }
+
+  public void setAmount_s_c(long amount_s_c) {
+    this.amount_s_c = amount_s_c;
+  }
+
+  public long getAmount_var_c() {
+    return amount_var_c;
+  }
+
+  public void setAmount_var_c(long amount_var_c) {
+    this.amount_var_c = amount_var_c;
+  }
+
+  public String getBegin_c() {
+    return begin_c;
+  }
+
+  public void setBegin_c(String begin_c) {
+    this.begin_c = begin_c;
+  }
+
+  public long getBegin_l_c() {
+    return begin_l_c;
+  }
+
+  public void setBegin_l_c(long begin_l_c) {
+    this.begin_l_c = begin_l_c;
+  }
+
+  public long getBuy_c() {
+    return buy_c;
+  }
+
+  public void setBuy_c(long buy_c) {
+    this.buy_c = buy_c;
+  }
+
+  public long getDiff_v_c() {
+    return diff_v_c;
+  }
+
+  public void setDiff_v_c(long diff_v_c) {
+    this.diff_v_c = diff_v_c;
+  }
+
+  public String getEnd_c() {
+    return end_c;
+  }
+
+  public void setEnd_c(String end_c) {
+    this.end_c = end_c;
+  }
+
+  public long getEnd_l_c() {
+    return end_l_c;
+  }
+
+  public void setEnd_l_c(long end_l_c) {
+    this.end_l_c = end_l_c;
+  }
+
+  public long getSale_c() {
+    return sale_c;
+  }
+
+  public void setSale_c(long sale_c) {
+    this.sale_c = sale_c;
+  }
+
   public String getCode() {
     return code;
   }

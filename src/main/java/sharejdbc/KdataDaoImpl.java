@@ -20,7 +20,7 @@ import fsanalysis.KModel;
  */
 public class KdataDaoImpl extends JdbcDaoSupport implements IKdataDao {
 
-  String insertSql ="insert into k_st_his_data(code,ktype,date,open,high,close,low,volume,price_change,p_change,ma5,ma10,ma20,v_ma5,v_ma10,v_ma20,turnover)"
+  String insertSql ="insert ignore into k_st_his_data(code,ktype,date,open,high,close,low,volume,price_change,p_change,ma5,ma10,ma20,v_ma5,v_ma10,v_ma20,turnover)"
                     + "values(:code,:ktype,:date,:open,:high,:close,:low,:volume,:price_change,:p_change,:ma5,:ma10,:ma20,:v_ma5,:v_ma10,:v_ma20,:turnover)";
 
   String delSql = "delete from k_st_his_data where date >=? and date <=? and code = ? and ktype = ?";

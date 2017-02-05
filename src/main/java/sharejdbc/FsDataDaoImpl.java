@@ -18,7 +18,7 @@ import fsanalysis.FsModel;
  */
 public class FsDataDaoImpl extends JdbcDaoSupport implements IfsdataDao {
 
-  String insertSql = "insert into fs_st_his_data_v(code,date,time,price,`change`,volume,amount,type)values(?,?,?,?,?,?,?,?)";
+  String insertSql = "insert ignore into fs_st_his_data_v(code,date,time,price,`change`,volume,amount,type)values(?,?,?,?,?,?,?,?)";
 
   String delSql = "delete from fs_st_his_data_v where code =? and date>=? and date<=? ";
 

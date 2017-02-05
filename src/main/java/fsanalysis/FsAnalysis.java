@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -239,7 +241,7 @@ public class FsAnalysis {
       fsRes.setBegin(DateUtil.convert2dateStr(begin_l));
       fsRes.setEnd(DateUtil.convert2dateStr(step_end));
       fsRes.setBegin_l(begin_l);
-      fsRes.setEnd_l(end_l);
+      fsRes.setEnd_l(step_end);
       //添加code
       fsRes.setCode(stockcode);
       fs_res_list.add(fsRes);
@@ -256,11 +258,7 @@ public class FsAnalysis {
     });
     System.out.println(fs_res_list_filter.size());
     //计算累计量
-    FsRes fsRes = fs_computer_sum(Lists.newArrayList(fs_res_list_filter));
-
-    FsResDisplay resDisplay = new FsResDisplay();
-    resDisplay.setLj_item(fsRes);
-    resDisplay.setResList(Lists.newArrayList(fs_res_list_filter));
+    FsResDisplay resDisplay = fs_computer_sum(Lists.newArrayList(fs_res_list_filter));
     resDisplay.setFile_name(file_name);
     return resDisplay;
   }
@@ -349,7 +347,7 @@ public class FsAnalysis {
       fsRes.setBegin(DateUtil.convert2dateStr(begin_l));
       fsRes.setEnd(DateUtil.convert2dateStr(step_end));
       fsRes.setBegin_l(begin_l);
-      fsRes.setEnd_l(end_l);
+      fsRes.setEnd_l(step_end);
       //添加code
       fsRes.setCode(stockcode);
       fs_res_list.add(fsRes);
@@ -366,11 +364,7 @@ public class FsAnalysis {
     });
     System.out.println(fs_res_list_filter.size());
     //计算累计量
-    FsRes fsRes = fs_computer_sum(Lists.newArrayList(fs_res_list_filter));
-
-    FsResDisplay resDisplay = new FsResDisplay();
-    resDisplay.setLj_item(fsRes);
-    resDisplay.setResList(Lists.newArrayList(fs_res_list_filter));
+    FsResDisplay resDisplay = fs_computer_sum(Lists.newArrayList(fs_res_list_filter));
     resDisplay.setFile_name(file_name);
     return resDisplay;
   }
@@ -407,7 +401,13 @@ public class FsAnalysis {
     return resTemp;
   }
 
-  public static FsRes fs_computer_sum(List<FsRes> items) {
+  public static FsResDisplay fs_computer_sum(List<FsRes> items) {
+    Collections.sort(items,new Comparator<FsRes>() {
+      @Override
+      public int compare(FsRes o1, FsRes o2) {
+        return (int) (o1.getBegin_l() - o2.getBegin_l());
+      }
+    });
     FsRes fsRes = new FsRes();
     long pre_b = 0;
     long pre_e = 0;
@@ -444,6 +444,18 @@ public class FsAnalysis {
       amount_var_sum += item.getAmount_var();
       pre_b = begin_l;
       pre_e = end_l;
+      //计算累积量
+      item.setBegin_l_c(mix);
+      item.setBegin_c(DateUtil.convert2dateStr(mix));
+      item.setEnd_l_c(end_l);
+      item.setEnd_c(DateUtil.convert2dateStr(end_l));
+      item.setBuy_c(buy_sum);
+      item.setSale_c(sale_sum);
+      item.setDiff_v_c(diff_v_sum);
+      item.setAmount_b_c(amount_b_sum);
+      item.setAmount_s_c(amount_s_sum);
+      item.setAmount_diff_c(amount_diff_sum);
+      item.setAmount_var_c(amount_var_sum);
       i++;
     }
     fsRes.setCode(code);
@@ -456,7 +468,22 @@ public class FsAnalysis {
     fsRes.setAmount_s(amount_s_sum);
     fsRes.setAmount_diff(amount_diff_sum);
     fsRes.setAmount_var(amount_var_sum);
-    return fsRes;
+//可以删除----
+    fsRes.setBegin_l_c(mix);
+    fsRes.setBegin_c(DateUtil.convert2dateStr(mix));
+    fsRes.setEnd_l_c(max);
+    fsRes.setEnd_c(DateUtil.convert2dateStr(max));
+    fsRes.setBuy_c(buy_sum);
+    fsRes.setSale_c(sale_sum);
+    fsRes.setDiff_v_c(diff_v_sum);
+    fsRes.setAmount_b_c(amount_b_sum);
+    fsRes.setAmount_s_c(amount_s_sum);
+    fsRes.setAmount_diff_c(amount_diff_sum);
+    fsRes.setAmount_var_c(amount_var_sum);
+    FsResDisplay resDisplay = new FsResDisplay();
+    resDisplay.setResList(items);
+    resDisplay.setLj_item(fsRes);
+    return resDisplay;
   }
 
   public static void printRes(String resPrint, BufferedWriter write) {
