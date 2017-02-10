@@ -29,7 +29,7 @@ public class FsanalysisController {
     FsResDisplay fsResDisplay =
         FsAnalysis.fs_analysis_v(query.getStockcode(), query.getBeginDate(), query.getBeginTime(),
                                  query.getEndDate(), query.getEndTime(), query.getPeriod(),
-                                 Unit.day, query.getbVolume(), query.getSvolume());
+                                 Unit.day, query.getbVolume(), query.getsVolume());
     return fsResDisplay;
   }
 }

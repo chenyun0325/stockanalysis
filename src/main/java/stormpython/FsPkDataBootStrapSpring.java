@@ -16,7 +16,7 @@ public class FsPkDataBootStrapSpring implements Runnable, INode {
  private static final Logger errorLog = LoggerFactory.getLogger(FsPkDataBootStrapSpring.class);
 
   //必须 static ?
-  private static FsPKQuene<FsData> fspkQuene;//数据来源
+  private  FsPKQuene<FsData> fspkQuene;//数据来源
 
   private static Thread dataInputThread;
 
@@ -75,6 +75,7 @@ public class FsPkDataBootStrapSpring implements Runnable, INode {
   @Override
   public void startNode() {
     fspkQuene = FsPKQuene.getInstance();
+    System.out.println("______xx____"+fspkQuene);
     //新建task
     dataInputThread = new Thread(this,"data_db_inputThread_0");
     dataInputThread.start();

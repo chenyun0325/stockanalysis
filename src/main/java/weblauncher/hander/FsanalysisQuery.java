@@ -15,7 +15,7 @@ public class FsanalysisQuery {
   int period;
   Unit unit;
   long bVolume;
-  long svolume;
+  long sVolume;
 
   long zl_volume_all;
 
@@ -91,11 +91,11 @@ public class FsanalysisQuery {
     this.stockcode = stockcode;
   }
 
-  public long getSvolume() {
-    return svolume;
+  public long getsVolume() {
+    return sVolume;
   }
 
-  public void setSvolume(long svolume) {
-    this.svolume = svolume;
+  public void setsVolume(long sVolume) {
+    this.sVolume = sVolume;
   }
 }

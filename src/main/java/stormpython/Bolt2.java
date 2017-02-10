@@ -68,7 +68,8 @@ public class Bolt2 extends BaseBasicBolt {
   private String yd_file ="D:/stock_data/holders/yd";
   private String td_file ="D:/stock_data/holders/td";
 
-  private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
+  //必须static ? 因为 blot可以分发到不同jvm吗？？
+  private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
  // private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
   public Bolt2(double filter_mount, double filter_per, int slide_size) {
     this.filter_mount = filter_mount;
@@ -84,7 +85,7 @@ public class Bolt2 extends BaseBasicBolt {
       JSONObject item_json = JSONObject.fromObject(item);
       FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
       //添加异步db数据存储
-      System.out.println("------------"+fsPKQuene.toString());
+      System.out.println("------------"+fsPKQuene);
       fsPKQuene.put(fsdata);
       code_map = transfer(code_map, code, fsdata);
       //处理单个数据----每新增1个数据分析一次
