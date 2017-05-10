@@ -58,9 +58,9 @@ public class SlidingWindowBolt extends BaseBasicBolt {
       new ConcurrentHashMap<>();
 //存储股票夹单历史数据
 
-  private String jd_file = "D:/stock_data/holders/jd";
-  private static String jd_file_thead = "D:/stock_data/holders/jd_thead";
-  private static String jd_his_file_thead = "D:/stock_data/holders/jd_his_thead";
+  private String jd_file = "/Users/chenyun/stockData/holders/jd";
+  private static String jd_file_thead = "/Users/chenyun/stockData/holders/jd_thead";
+  private static String jd_his_file_thead = "/Users/chenyun/stockData/holders/jd_his_thead";
 
   private int maxLen;//需要清理list的最大长度
   private int max_size;//最大大小

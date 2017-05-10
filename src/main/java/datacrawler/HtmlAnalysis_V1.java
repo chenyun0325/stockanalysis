@@ -37,9 +37,9 @@ public class HtmlAnalysis_V1 {
   // TODO: 2016/11/17 1.新进股东样本剔除限制股东 2.标记最新一期和其它期别重复股东的性质
   static Logger log = LoggerFactory.getLogger("logfile");
   static Logger log_error = LoggerFactory.getLogger("errorfile");
-  public static final String dir = "D:/stock_data/holders";
+  public static final String dir = "/Users/chenyun/stockData/holders";
 
-  public static final String outfile = "D:/stock_data/holders/stocks_analysis.txt";
+  public static final String outfile = "/Users/chenyun/stockData/holders/stocks_analysis.txt";
 
   public static final String split="@";
 

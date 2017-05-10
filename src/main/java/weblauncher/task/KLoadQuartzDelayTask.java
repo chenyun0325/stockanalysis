@@ -86,7 +86,7 @@ public class KLoadQuartzDelayTask implements ITask {
     ProtectionDomain protectionDomain = KLoadQuartzDelayTask.class.getProtectionDomain();
     URL codeLoc = protectionDomain.getCodeSource().getLocation();
     String dir = new File(codeLoc.getFile()).getAbsolutePath();
-    String path = dir + "\\" + shellFile;
+    String path = dir + System.getProperty("file.separator") + shellFile;
 
     if (stockList != null) {
       //删除数据

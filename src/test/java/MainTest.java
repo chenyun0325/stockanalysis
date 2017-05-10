@@ -8,10 +8,13 @@ import java.io.IOException;
 public class MainTest {
 
   public static void main(String[] args) {
+
+    String path = System.getProperty("file.separator");
+    System.out.println(path);
     FileWriter fw = null;
     BufferedWriter bfw = null;
     try {
-      fw = new FileWriter("D:/stock_data/xyz.tttttt", true);
+      fw = new FileWriter("/Users/chenyun/stockData/xyz.tttttt", true);
       bfw = new BufferedWriter(fw);
       Long time = System.currentTimeMillis();
       bfw.write(time.toString());

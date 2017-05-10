@@ -40,7 +40,7 @@ public class FsAnalysis {
   static Logger log_error = LoggerFactory.getLogger("errorfile");
   public static final String title = "title,股票代码,开始时间,结束时间,买量,卖量,买卖差,买入金额,卖出金额,买卖金额差,增量资金";
 
-  public static String outfile = "D:/stock_data/holders/fs_analysis_";
+  public static String outfile = "/Users/chenyun/stockData/holders/fs_analysis_";
 
   public static Predicate<FsModel> b_filter = new Predicate<FsModel>() {
     public boolean apply(FsModel input) {

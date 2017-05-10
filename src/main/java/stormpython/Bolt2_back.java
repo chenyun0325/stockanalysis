@@ -59,8 +59,8 @@ public class Bolt2_back extends BaseBasicBolt {
 
   StandardDeviation std = new StandardDeviation();
 
-  private String yd_file ="D:/stock_data/holders/yd";
-  private String td_file ="D:/stock_data/holders/td";
+  private String yd_file ="/Users/chenyun/stockData/holders/yd";
+  private String td_file ="/Users/chenyun/stockData/holders/td";
 
   public Bolt2_back(double filter_mount, double filter_per, int slide_size) {
     this.filter_mount = filter_mount;

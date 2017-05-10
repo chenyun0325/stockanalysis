@@ -48,7 +48,7 @@ public class LhbAnalysis {
   static Logger log = LoggerFactory.getLogger("logfile");
   static Logger log_error = LoggerFactory.getLogger("errorfile");
   public static String format_print = "{股票代码期数1:%s,股票代码期数2:%s,共同机构:%s}";
-  public static final String dir = "D:/stock_data/lhb";
+  public static final String dir = "/Users/chenyun/stockData/lhb";
   public static String lhblistUrl = "http://stock.finance.qq.com/cgi-bin/sstock/q_lhb_js?t=2&c=&b=%s&e=%s&p=1&l=&ol=6&o=desc";
   public static String lhbJGUrl = "http://stock.finance.qq.com/cgi-bin/sstock/q_lhb_xx_js?c=%s&b=%s&l=%s";
   public static Predicate<LhbJGitem> nofilter = new Predicate<LhbJGitem>() {
@@ -73,8 +73,8 @@ public class LhbAnalysis {
   public static void main(String[] args) {
     try {
       //1.加载数据
-      String start="20161008";
-      String end="20161229";
+      String start="20170425";
+      String end="20170505";
       Map<String, List<LhbItemJG>> loadMap = load(start, end);
       //2.构造比较集合
       TreeMap<String, List<LhbItemJG>> treeMap = new TreeMap<>();

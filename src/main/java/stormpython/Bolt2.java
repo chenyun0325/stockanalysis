@@ -65,8 +65,8 @@ public class Bolt2 extends BaseBasicBolt {
 
   StandardDeviation std = new StandardDeviation();
 
-  private String yd_file ="D:/stock_data/holders/yd";
-  private String td_file ="D:/stock_data/holders/td";
+  private String yd_file ="/Users/chenyun/stockData/holders/yd";
+  private String td_file ="/Users/chenyun/stockData/holders/td";
 
   //必须static ? 因为 blot可以分发到不同jvm吗？？
   private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();

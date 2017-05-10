@@ -36,7 +36,7 @@ public class ShellTaskNoResQuartzTask implements ITask {
       ProtectionDomain protectionDomain = ShellTaskNoResQuartzTask.class.getProtectionDomain();
       URL codeLoc = protectionDomain.getCodeSource().getLocation();
       String dir = new File(codeLoc.getFile()).getAbsolutePath();
-      String path = dir + "\\" + shellFile;
+      String path = dir + System.getProperty("file.separator") + shellFile;
       List<String> params =
           Lists.newArrayList("python", path, args);
       String cmdStr = Joiner.on(" ").join(params);

@@ -53,7 +53,7 @@ public class FsPythonShellLoadController {
       ProtectionDomain protectionDomain = FsPythonShellLoadController.class.getProtectionDomain();
       URL codeLoc = protectionDomain.getCodeSource().getLocation();
       String dir = new File(codeLoc.getFile()).getAbsolutePath();
-      String path = dir + "\\" + shellFile;
+      String path = dir + System.getProperty("file.separator") + shellFile;
       List<String> params =
           Lists.newArrayList("python", path, stockList, beginDate, endDate);
       String cmd = Joiner.on(" ").join(params);

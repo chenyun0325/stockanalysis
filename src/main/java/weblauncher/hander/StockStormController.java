@@ -25,7 +25,7 @@ public class StockStormController {
   LocalCluster cluster = new LocalCluster();
 
   /**
-   * localhost/ct2/start.do?filter_mount=1000000&filter_per=100&slide_size=20&max_size=100&wind_size=10&price_dif_var=0.005&amount=1000000&price_dif_var1=0.001&amount1=1500000
+   * localhost/ct2/start.do?topology=test&filter_mount=1000000&filter_per=100&slide_size=20&max_size=100&wind_size=10&price_dif_var=0.005&amount=1000000&price_dif_var1=0.001&amount1=1500000
    */
   @RequestMapping("/start.do")
   public void stormStart(StockStormQuery query, HttpServletResponse res) {

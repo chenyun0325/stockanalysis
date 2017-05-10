@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class HtmlAnalysis_V {
 
-  public static final String dir = "D:/stock_data/holders";
+  public static final String dir = "/Users/chenyun/stockData/holders";
 
   public static void main(String[] args) {
     String[] codes = {"600051"};

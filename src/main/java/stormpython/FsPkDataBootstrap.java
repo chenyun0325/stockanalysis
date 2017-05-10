@@ -8,20 +8,20 @@ import fsrealanalysis.FsData;
 /**
  * Created by cy111966 on 2017/1/19.
  */
-public class FsPkDataBootStrap implements Runnable, INode {
- private static final Logger errorLog = LoggerFactory.getLogger(FsPkDataBootStrap.class);
+public class FsPkDataBootstrap implements Runnable, INode {
+ private static final Logger errorLog = LoggerFactory.getLogger(FsPkDataBootstrap.class);
 
   private static FsPKQuene<FsData> fspkQuene;//数据来源
 
-  private static volatile FsPkDataBootStrap instance;
+  private static volatile FsPkDataBootstrap instance;
 
   private static Thread dataInputThread;
 
-  public static FsPkDataBootStrap getInstance(){
+  public static FsPkDataBootstrap getInstance(){
     if (instance == null) {
-      synchronized (FsPkDataBootStrap.class){
+      synchronized (FsPkDataBootstrap.class){
         if (instance == null) {
-          instance = new FsPkDataBootStrap();
+          instance = new FsPkDataBootstrap();
         }
       }
     }

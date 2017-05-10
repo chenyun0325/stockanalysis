@@ -16,7 +16,7 @@ import java.util.Arrays;
 public class HtmlLoad {
   static Logger log = LoggerFactory.getLogger("logfile");
   static Logger log_error = LoggerFactory.getLogger("errorfile");
-public static final String dir ="D:/stock_data/holders";
+public static final String dir ="/Users/chenyun/stockData/holders";
   public static void main(String[] args) {
     String[] codes = Constant.stock_all.split(",");
     String path="http://basic.10jqka.com.cn/32/${code}/holder.html";
