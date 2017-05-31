@@ -4,18 +4,17 @@ Created on Tue Nov 08 23:14:26 2016
 
 @author: cy111966
 """
+import sqlalchemy
 
-import logging
-import sys
-import traceback
-
-import sql
 import toptrade as tp
+import sql
+import sys
+import logging
+import traceback
 
 if __name__=='__main__':
     """
     python toptrade_entry.py 1 top_list 2016-11-08
-    python toptrade_entry.py 5 stock_basics x append
     
     """
     try:
@@ -23,6 +22,7 @@ if __name__=='__main__':
         table_name = sys.argv[2]
         fuc_param = sys.argv[3]
         sql_flag = 'append'
+        dtype = None
         df={}
         #print("---------")
         if flag=='1':
@@ -38,8 +38,9 @@ if __name__=='__main__':
         if flag=='5':
             df = tp.stock_basics()
             sql_flag = sys.argv[4]
+            dtype={'code': sqlalchemy.VARCHAR(6)}
         print(df)
-        res = tp.save_db(data=df,table_name=table_name,con=sql.engine,flag=sql_flag)
+        res = tp.save_db(data=df,table_name=table_name,con=sql.engine,flag=sql_flag,dtype=dtype)
     except Exception,e:
           logging.error(sys.argv)
           logging.error(traceback.print_exc())

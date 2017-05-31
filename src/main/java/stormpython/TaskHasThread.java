@@ -56,8 +56,10 @@ public class TaskHasThread implements Runnable, INode {
         // TODO: 2017/1/24 如何控制频次
         if (!flag) {
           flag=true;
-          ProcessBuilder builder = new ProcessBuilder(cmdString);
-          process = builder.start();
+          //ProcessBuilder builder = new ProcessBuilder(cmdString);
+            Runtime rt = Runtime.getRuntime();
+            process = rt.exec(cmdString);
+            System.err.println(cmdString);
           InputStream proInputStream = process.getInputStream();
           if (proInputStream instanceof FileInputStream) {
             inputChannel = ((FileInputStream) proInputStream).getChannel();

@@ -131,7 +131,7 @@ public class FsAnalysis {
     Connection conn = DbConnection.getConn();
     PreparedStatement ps =
         conn.prepareStatement(
-            "SELECT * FROM db_test.fs_st_data where date >=? and date <=? and code = ?");
+            "SELECT * FROM db_test.fs_st_his_data_v where date >=? and date <=? and code = ?");
     ps.setString(1, beginDate);
     ps.setString(2, endDate);
     ps.setString(3, stockcode);

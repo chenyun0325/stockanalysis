@@ -1,8 +1,14 @@
 package weblauncher.hander;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import weblauncher.task.FsLoadQuartzDelayTask;
+import weblauncher.task.FsLoadQuartzTask;
+import weblauncher.task.IniFileRead;
+import weblauncher.task.KLoadQuartzDelayTask;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,6 +19,18 @@ import java.util.zip.CRC32;
  */
 @Controller
 public class TestController {
+
+  @Autowired
+  private IniFileRead iniTaskJob;
+
+  @Autowired
+  private KLoadQuartzDelayTask kLoadQuartzDelayTask;
+
+  @Autowired
+  private FsLoadQuartzDelayTask fsLoadQuartzDelayTask;
+
+  @Autowired
+  private FsLoadQuartzTask fsLoadQuartzTask;
 
   @RequestMapping("/test.do")
   @ResponseBody
@@ -41,11 +59,43 @@ public class TestController {
     return i;
   }
 
+
+  @RequestMapping("/set.do")
+  @ResponseBody
+  public void setStock(@RequestParam("name") String stockBlock){
+
+    iniTaskJob.setBkNames(stockBlock);
+
+  }
+
+
+  @RequestMapping("/set1.do")
+  @ResponseBody
+  public void setStock1(@RequestParam("name") String stockBlock){
+
+    kLoadQuartzDelayTask.setBkNames(stockBlock);
+
+  }
+
+  @RequestMapping("/set2.do")
+  @ResponseBody
+  public void setStock2(@RequestParam("name") String stockBlock){
+
+    fsLoadQuartzDelayTask.setBkNames(stockBlock);
+
+  }
+
+  @RequestMapping("/set3.do")
+  @ResponseBody
+  public void setStock3(@RequestParam("name") String stockBlock){
+
+    fsLoadQuartzTask.setBkNames(stockBlock);
+
+  }
   private static int newCompatHashingAlg( String key ) {
     CRC32 checksum = new CRC32();
     checksum.update( key.getBytes() );
     int crc = (int) checksum.getValue();
     return (crc >> 16) & 0x7fff;
   }
-
 }

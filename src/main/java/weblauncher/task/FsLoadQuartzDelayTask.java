@@ -36,6 +36,19 @@ public class FsLoadQuartzDelayTask implements ITask {
 
   private IfsdataDao fsdataDao;
 
+  private IniFileRead iniFileRead;
+
+  private String bkNames;
+
+  public void setIniFileRead(IniFileRead iniFileRead) {
+    this.iniFileRead = iniFileRead;
+  }
+
+  public void setBkNames(String bkNames) {
+    this.bkNames = bkNames;
+  }
+
+
   public void setPeriod(int period) {
     this.period = period;
   }
@@ -81,14 +94,12 @@ public class FsLoadQuartzDelayTask implements ITask {
     String dir = new File(codeLoc.getFile()).getAbsolutePath();
     String path = dir + System.getProperty("file.separator") + shellFile;
 
-    if (stockList != null) {
-      //删除数据
-      String[] codes = stockList.split(this.split);
+    List<String> codes = iniFileRead.getCodesByBlocks(bkNames);
       for (String code : codes) {
         int count = fsdataDao.batchDelete(code, beginDate, nowDate);
         System.out.println(count);
       }
-      int total = codes.length;
+      int total = codes.size();
       int batch = total/batchsize;
       for (int i = 0; i <= batch; i++) {//新建n个线程
         int start = i * batchsize;
@@ -98,7 +109,7 @@ public class FsLoadQuartzDelayTask implements ITask {
         }
         List<String> codeslist = new ArrayList<String>();
         for (int j = start; j < end; j++) {
-          codeslist.add(codes[j]);
+          codeslist.add(codes.get(j));
         }
         String codeListStr = Joiner.on(",").join(codeslist);
         codeslist.clear();
@@ -110,7 +121,7 @@ public class FsLoadQuartzDelayTask implements ITask {
         shellTask.startNode();//直接执行task,线程阻塞
         taskThreads.add(shellTask);
       }
-    }
+
 
 
   }

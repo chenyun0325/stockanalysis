@@ -19,7 +19,7 @@ def k_load_batch(code_list=None,start=None,end=None,ktype='D'):
         try:
             k_df = k_load(code=code, start=start, end=end, ktype=ktype)
             if (k_df is not None) & (len(k_df.index) > 4):  # 没有数据情况返回
-                result.append(res)
+                result.append(k_df)
         except Exception, e:
             log.error(code)
             log.error(traceback.print_exc())
@@ -48,7 +48,7 @@ if __name__ == '__main__':
             json_dic['v_ma5'] = row['v_ma5']
             json_dic['v_ma10'] = row['v_ma10']
             json_dic['v_ma20'] = row['v_ma20']
-            json_dic['turnover'] = row['turnover']
+            #json_dic['turnover'] = row['turnover']
             json_str=json.dumps(json_dic)
             print json_str
 
