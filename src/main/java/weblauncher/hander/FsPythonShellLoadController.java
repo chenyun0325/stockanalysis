@@ -36,6 +36,10 @@ public class FsPythonShellLoadController {
 
   private final String split = ",";
 
+  /**
+   * http://localhost:8080/ct2/fsload.do?stockList=600379&beginDate=2017-03-20&endDate=2017-07-22&shellFile=fsdata_load.py&batchSize=500
+   * @param query
+   */
   @RequestMapping("/fsload.do")
   public void fsload(FsLoadQuery query) {
     try {

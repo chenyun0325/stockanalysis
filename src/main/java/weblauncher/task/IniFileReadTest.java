@@ -25,6 +25,8 @@ public class IniFileReadTest {
             System.out.println(s);
         }
         Map<String, List<String>> selectionMap = instance.getSelectionMap();
+        List<String> all = instance.getCodesByBlocks("all");
+        System.out.println(all);
 
 
     }

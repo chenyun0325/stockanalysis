@@ -152,7 +152,9 @@ public class IniFileRead implements ITask {
         String[] bkNameArray = bkNames.split(this.split);
 
         if (allBlock.equals(bkNames)) {
-            Lists.newArrayList(block_name_maps.keySet()).toArray(bkNameArray);
+            List<String> allBlockList = Lists.newArrayList(block_name_maps.keySet());
+            bkNameArray = new String[allBlockList.size()];
+            allBlockList.toArray(bkNameArray);
         }
         StringBuffer stockCodeBuffer = new StringBuffer();
         for (String bkName : bkNameArray) {
