@@ -5,31 +5,17 @@ import com.google.common.base.Joiner;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
-
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sharejdbc.IfsdataDao;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
+import java.io.*;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-
-import db.DbConnection;
+import java.util.*;
 
 /**
  * Created by cy111966 on 2016/11/24.
@@ -60,8 +46,16 @@ public class FsAnalysis {
   };
 
 
+  private static IfsdataDao fsDao;
+
+  public static void setFsDao(IfsdataDao fsDaoInject) {
+    fsDao = fsDaoInject;
+  }
+
   public static void main(String[] args) {
     try {
+
+      // TODO: 2017/12/23 加载spring bean 注入 fsDao
       //List<FsModel> fsModels = query_data("002125","2016-11-21", "14:00:00", "2016-11-22", "10:25:00");
 //      FsResDisplay fsResDisplay =
 //          fs_analysis("002125", "2016-11-21", "14:00:00", "2016-11-22", "10:25:00", 10, Unit.min, 0);
@@ -127,43 +121,46 @@ public class FsAnalysis {
     String end = endDate + " " + endTime;
     final long begin_l = DateUtil.convert2long(begin, DateUtil.TIME_FORMAT);
     final long end_l = DateUtil.convert2long(end, DateUtil.TIME_FORMAT);
-    List<FsModel> lists = new ArrayList<FsModel>();
-    Connection conn = DbConnection.getConn();
-    PreparedStatement ps =
-        conn.prepareStatement(
-            "SELECT * FROM db_test.fs_st_data where date >=? and date <=? and code = ?");
-    ps.setString(1, beginDate);
-    ps.setString(2, endDate);
-    ps.setString(3, stockcode);
-    ResultSet rs = ps.executeQuery();
-    //int col = rs.getMetaData().getColumnCount();
-    while (rs.next()) {
-      String code = rs.getString(2);
-      String date = rs.getString(3);
-      String time = rs.getString(4);
-      double price = rs.getDouble(5);
-      String change = rs.getString(6);
-      long volume = rs.getLong(7);
-      long amount = rs.getLong(8);
-      String type = rs.getString(9);
-      String dateTime = date + " " + time;
-      long time_long = DateUtil.convert2long(dateTime, DateUtil.TIME_FORMAT);
-      FsModel model = new FsModel();
-      model.setCode(code);
-      model.setDate(date);
-      model.setTime(time);
-      model.setPrice(price);
-      model.setChange(change);
-      model.setVolume(volume);
-      model.setAmount(amount);
-      model.setType(type);
-      model.setDateTime(time_long);
-      lists.add(model);
+
+    List<FsModel> lists = fsDao.query(stockcode, begin, end);
+
+//    List<FsModel> lists = new ArrayList<>();
+//    Connection conn = DbConnection.getConn();
+//    PreparedStatement ps =
+//        conn.prepareStatement(
+//            "SELECT * FROM fs_st_his_data_v where date >=? and date <=? and code = ?");
+//    ps.setString(1, beginDate);
+//    ps.setString(2, endDate);
+//    ps.setString(3, stockcode);
+//    ResultSet rs = ps.executeQuery();
+//    //int col = rs.getMetaData().getColumnCount();
+//    while (rs.next()) {
+//      String code = rs.getString(2);
+//      String date = rs.getString(3);
+//      String time = rs.getString(4);
+//      double price = rs.getDouble(5);
+//      String change = rs.getString(6);
+//      long volume = rs.getLong(7);
+//      long amount = rs.getLong(8);
+//      String type = rs.getString(9);
+//      String dateTime = date + " " + time;
+//      long time_long = DateUtil.convert2long(dateTime, DateUtil.TIME_FORMAT);
+//      FsModel model = new FsModel();
+//      model.setCode(code);
+//      model.setDate(date);
+//      model.setTime(time);
+//      model.setPrice(price);
+//      model.setChange(change);
+//      model.setVolume(volume);
+//      model.setAmount(amount);
+//      model.setType(type);
+//      model.setDateTime(time_long);
+//      lists.add(model);
 //      for (int i=2;i<=col;i++){
 //        System.out.print(rs.getString(i)+"\t");
 //      }
 //      System.out.println("");
-    }
+ //   }
     //过滤
     Collection<FsModel> filterList = Collections2.filter(lists, new Predicate<FsModel>() {
       public boolean apply(FsModel input) {
