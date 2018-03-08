@@ -132,8 +132,8 @@
 
     <bean id="fsTaskJobStartTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
         <property name="jobDetail" ref="fsTaskJobStartMethod"></property>
-        <!--<property name="cronExpression" value="0 15 9 ? * 2-6"></property>-->
-        <property name="cronExpression" value="0 45 9 * * ?"></property>
+        <property name="cronExpression" value="0 15 9 ? * 2-6"></property>
+        <!--<property name="cronExpression" value="0 45 9 * * ?"></property>-->
     </bean>
 
     <bean id="fsTaskJobStopTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">

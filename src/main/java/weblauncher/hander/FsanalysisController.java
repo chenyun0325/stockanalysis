@@ -9,12 +9,18 @@ import java.sql.SQLException;
 import fsanalysis.FsAnalysis;
 import fsanalysis.FsResDisplay;
 import fsanalysis.Unit;
+import sharejdbc.IfsdataDao;
+
+import javax.annotation.Resource;
 
 /**
  * Created by cy111966 on 2017/2/4.
  */
 @Controller
 public class FsanalysisController {
+
+  @Resource
+  private IfsdataDao fsdataDao;
 
 
   /**
@@ -26,6 +32,7 @@ public class FsanalysisController {
   @RequestMapping("/fsanalysis.do")
   @ResponseBody
   public FsResDisplay fsanalysis_query(FsanalysisQuery query) throws SQLException {
+    FsAnalysis.setFsDao(fsdataDao);
     FsResDisplay fsResDisplay =
         FsAnalysis.fs_analysis_v(query.getStockcode(), query.getBeginDate(), query.getBeginTime(),
                                  query.getEndDate(), query.getEndTime(), query.getPeriod(),
