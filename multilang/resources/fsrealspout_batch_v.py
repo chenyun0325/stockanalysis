@@ -87,6 +87,8 @@ class FsRealSpout(storm.Spout):
                      #storm.logInfo("Emiting %s" % sentence)
                      #storm.logInfo("Emiting code:%s row:%s" %(code,json))
                      storm.emit([code,json])
+                     storm.emit([code,json],stream="diff")
+
                flag=True
            except Exception,e:
                 log.error(traceback.print_exc())

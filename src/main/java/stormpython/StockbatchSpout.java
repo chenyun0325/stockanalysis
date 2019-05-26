@@ -22,6 +22,7 @@ public class StockbatchSpout extends ShellSpout implements IRichSpout {
     // Declare that we emit a 'sentence' field
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         declarer.declare(new Fields("code","row"));
+        declarer.declareStream("diff",new Fields("code","row"));
     }
 
     // No real configuration going on

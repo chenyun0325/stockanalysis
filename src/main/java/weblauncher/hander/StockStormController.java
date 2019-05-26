@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import datacrawler.Constant;
 import stormpython.Bolt2;
+import stormpython.DiffBolt;
 import stormpython.SlidingWindowBolt;
 import stormpython.StockbatchSpout;
 
@@ -36,11 +37,11 @@ public class StockStormController {
       builder.setSpout("FsRealSpout", new StockbatchSpout(Constant.stock_all, "4"), 1);
       splitBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
       builder.setBolt("slidBolt", new SlidingWindowBolt(query.getMax_size(), query.getWind_size(),
-                                                        query.getPrice_dif_var(), query.getAmount(),
-                                                        query.getPrice_dif_var1(),
-                                                        query.getAmount1()), 2)
+              query.getPrice_dif_var(), query.getAmount(),
+              query.getPrice_dif_var1(),
+              query.getAmount1()), 2)
           .fieldsGrouping("SplitBolt", new Fields("code"));
-
+      builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
       Config conf = new Config();
       conf.put(Config.TOPOLOGY_DEBUG, false);
       conf.put(Config.SUPERVISOR_WORKER_TIMEOUT_SECS, 1000);

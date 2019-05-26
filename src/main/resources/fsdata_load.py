@@ -85,6 +85,7 @@ if __name__ == '__main__':
             json_dic['amount'] = row['amount']
             json_dic['type'] = row['type']
             json_str=json.dumps(json_dic)
+            log.info(json_str)
             print json_str
 
 

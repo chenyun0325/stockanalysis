@@ -24,8 +24,8 @@ public static final String dir ="/Users/chenyun/stockData/holders";
     for (String code : codes) {
       String url = path.replace("${code}",code);
       System.out.println(url);
-      Thread.sleep(new Random().nextInt(500));
       load(url,dir,code);
+      Thread.sleep(1000);
     }
   }
 
