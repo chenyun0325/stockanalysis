@@ -1,12 +1,11 @@
 package sharejdbc;
 
+import fsanalysis.FsModel;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import stormpython.FsPkDataBootStrapSpring;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import fsanalysis.FsModel;
-import stormpython.FsPkDataBootStrapSpring;
 
 /**
  * Created by cy111966 on 2017/1/15.

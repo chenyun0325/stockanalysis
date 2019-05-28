@@ -1,8 +1,10 @@
 package stormpython;
 
+import fsanalysis.DateUtil;
+import fsrealanalysis.FsIndexRes;
+import fsrealanalysis.SlidingWindowPriceRes;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseBasicBolt;
@@ -13,20 +15,8 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import fsanalysis.DateUtil;
-import fsrealanalysis.FsIndexRes;
-import fsrealanalysis.SlidingWindowPriceRes;
 
 /**
  * Created by cy111966 on 2016/12/3. 1.计算方差 2.滑动窗口算法 3.math common http://www.bubuko.com/infodetail-542704.html

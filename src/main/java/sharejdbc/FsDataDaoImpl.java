@@ -1,5 +1,7 @@
 package sharejdbc;
 
+import fsanalysis.DateUtil;
+import fsanalysis.FsModel;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.RowMapper;
@@ -9,9 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-
-import fsanalysis.DateUtil;
-import fsanalysis.FsModel;
 
 /**
  * Created by cy111966 on 2017/1/15.

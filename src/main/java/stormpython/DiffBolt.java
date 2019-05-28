@@ -23,6 +23,7 @@ public class DiffBolt extends BaseBasicBolt {
             System.err.println(code);
             System.out.println(fsdata);
             System.out.println("mm:"+code);
+            System.out.println("name:"+Thread.currentThread().getName()+",code:"+code);
             collector.emit(new Values(code));
         }catch (Exception e){
             e.printStackTrace();

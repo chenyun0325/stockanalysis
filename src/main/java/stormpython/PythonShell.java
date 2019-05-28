@@ -1,10 +1,6 @@
 package stormpython;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 /**
  * Created by cy111966 on 2016/12/27.

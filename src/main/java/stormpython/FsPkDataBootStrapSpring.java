@@ -1,13 +1,12 @@
 package stormpython;
 
+import fsrealanalysis.FsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sharejdbc.IfsPkDataDao;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import fsrealanalysis.FsData;
-import sharejdbc.IfsPkDataDao;
 
 /**
  * Created by cy111966 on 2017/1/19.

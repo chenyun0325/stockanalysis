@@ -1,9 +1,8 @@
 package stormpython;
 
+import fsrealanalysis.FsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import fsrealanalysis.FsData;
 
 /**
  * Created by cy111966 on 2017/1/19.

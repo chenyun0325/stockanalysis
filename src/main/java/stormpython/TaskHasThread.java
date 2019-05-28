@@ -1,19 +1,14 @@
 package stormpython;
 
+import fsanalysis.FsModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sharejdbc.IfsdataDao;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
-
-import fsanalysis.FsModel;
-import sharejdbc.IfsdataDao;
 
 import static stormpython.FsPythonShellLoad.jsonToBean;
 

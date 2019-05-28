@@ -1,17 +1,15 @@
 package weblauncher.hander;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-
-import java.sql.SQLException;
-
 import fsanalysis.FsAnalysis;
 import fsanalysis.FsResDisplay;
 import fsanalysis.Unit;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import sharejdbc.IfsdataDao;
 
 import javax.annotation.Resource;
+import java.sql.SQLException;
 
 /**
  * Created by cy111966 on 2017/2/4.

@@ -2,16 +2,14 @@ package weblauncher.task;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stormpython.ShellTaskNoRes;
 
 import java.io.File;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.List;
-
-import stormpython.ShellTaskNoRes;
 
 /**
  * Created by cy111966 on 2017/1/25.

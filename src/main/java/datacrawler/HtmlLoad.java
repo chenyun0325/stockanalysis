@@ -9,7 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
-import java.util.Random;
 
 /**
  * Created by cy111966 on 2016/11/15.

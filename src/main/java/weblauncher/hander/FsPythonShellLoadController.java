@@ -2,24 +2,17 @@ package weblauncher.hander;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
-
+import fsanalysis.FsModel;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import sharejdbc.IfsdataDao;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import javax.annotation.Resource;
+import java.io.*;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Resource;
-
-import fsanalysis.FsModel;
-import sharejdbc.IfsdataDao;
 
 import static stormpython.FsPythonShellLoad.jsonToBean;
 

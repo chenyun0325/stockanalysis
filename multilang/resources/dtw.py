@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sys
 import numpy as np
+import sys
 
 
 def cal_dtw_distance(ts_a, ts_b):

@@ -2,6 +2,7 @@
 from __future__ import division
 
 import logging as log
+
 import sys
 import traceback
 import tushare as ts

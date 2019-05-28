@@ -2,7 +2,6 @@ package datacrawler;
 
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.jsoup.Jsoup;
 
 /**

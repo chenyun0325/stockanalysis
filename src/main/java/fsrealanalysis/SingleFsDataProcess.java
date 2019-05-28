@@ -1,11 +1,10 @@
 package fsrealanalysis;
 
 
+import fsanalysis.DateUtil;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 
 import java.io.Serializable;
-
-import fsanalysis.DateUtil;
 
 /**
  * Created by cy111966 on 2016/12/3.

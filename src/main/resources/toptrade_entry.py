@@ -4,13 +4,14 @@ Created on Tue Nov 08 23:14:26 2016
 
 @author: cy111966
 """
-import sqlalchemy
-
-import toptrade as tp
-import sql
-import sys
 import logging
+
+import sqlalchemy
+import sys
 import traceback
+
+import sql
+import toptrade as tp
 
 if __name__=='__main__':
     """

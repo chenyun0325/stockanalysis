@@ -1,7 +1,9 @@
-import storm
 # Counter is a nice way to count things,
 # but it is a Python 2.7 thing
 from collections import Counter
+
+import storm
+
 
 class CountBolt(storm.BasicBolt):
     # Initialize this instance

@@ -1,5 +1,6 @@
 package weblauncher.hander;
 
+import datacrawler.Constant;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.topology.BoltDeclarer;
@@ -7,14 +8,11 @@ import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
+import stormpython.*;
 
 import javax.servlet.http.HttpServletResponse;
-
-import datacrawler.Constant;
-import stormpython.Bolt2;
-import stormpython.DiffBolt;
-import stormpython.SlidingWindowBolt;
-import stormpython.StockbatchSpout;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -22,6 +20,7 @@ import stormpython.StockbatchSpout;
  */
 @Controller
 public class StockStormController {
+
 
   LocalCluster cluster = new LocalCluster();
 
@@ -41,7 +40,20 @@ public class StockStormController {
               query.getPrice_dif_var1(),
               query.getAmount1()), 2)
           .fieldsGrouping("SplitBolt", new Fields("code"));
-      builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
+      //builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
+//      List<Object> whiteList = new ArrayList<>();
+//      whiteList.add("300562");
+//      whiteList.add("601229");
+      String[] stockIndexArray = Constant.stock_index_code.split(",");
+      List<String> stockIndexList = Arrays.asList(stockIndexArray);
+      builder.setBolt("diffBlot",new DiffBolt(),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+
+      //builder.setBolt("",new SimilaritySlidingWindowBolt(10,3,5)).globalGrouping("");
+
+      builder.setBolt("similarityBolt",new SimilaritySlidingWindowBolt(30,10,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+
+      builder.setBolt("rankBolt",new RankBolt()).globalGrouping("similarityBolt");
+
       Config conf = new Config();
       conf.put(Config.TOPOLOGY_DEBUG, false);
       conf.put(Config.SUPERVISOR_WORKER_TIMEOUT_SECS, 1000);

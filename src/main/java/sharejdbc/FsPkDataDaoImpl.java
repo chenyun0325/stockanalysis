@@ -1,7 +1,7 @@
 package sharejdbc;
 
 import com.google.common.collect.Lists;
-
+import fsrealanalysis.FsData;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -12,8 +12,6 @@ import org.springframework.jdbc.core.support.JdbcDaoSupport;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
-
-import fsrealanalysis.FsData;
 
 /**
  * Created by cy111966 on 2017/1/15.

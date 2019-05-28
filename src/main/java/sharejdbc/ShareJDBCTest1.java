@@ -1,11 +1,10 @@
 package sharejdbc;
 
+import fsrealanalysis.FsData;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import fsrealanalysis.FsData;
 
 /**
  * Created by cy111966 on 2017/1/15.

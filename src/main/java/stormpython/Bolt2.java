@@ -1,8 +1,12 @@
 package stormpython;
 
+import fsanalysis.DateUtil;
+import fsrealanalysis.FsData;
+import fsrealanalysis.FsIndexRes;
+import fsrealanalysis.SingleFsDataProcess;
+import fsrealanalysis.SlidingWindowPriceRes;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
-
 import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.storm.topology.BasicOutputCollector;
@@ -23,12 +27,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import fsanalysis.DateUtil;
-import fsrealanalysis.FsData;
-import fsrealanalysis.FsIndexRes;
-import fsrealanalysis.SingleFsDataProcess;
-import fsrealanalysis.SlidingWindowPriceRes;
 
 /**
  * Created by chenyun on 16/2/2.
