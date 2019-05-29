@@ -257,13 +257,15 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
             String codeCloseKey = Joiner.on("_").join(code, "close");
             SynchronizedDescriptiveStatistics stockPriCloseDiffWindow =
                     stock_window_map.putIfAbsent(codeCloseKey, new SynchronizedDescriptiveStatistics(windowSize));
-            stockPriCloseDiffWindow.addValue(priceCloseDiff);
+            if (stockPriCloseDiffWindow != null) {
+                stockPriCloseDiffWindow.addValue(priceCloseDiff);
+            }
 
 
 
-            collector.emit(new Values(code));
+            //collector.emit(new Values(code));
         } catch (Exception e) {
-            log_error.error("", e);
+            log_error.error("SimilaritySlidingWindowBolt error", e);
         }
 
     }
