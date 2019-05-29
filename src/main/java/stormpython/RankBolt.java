@@ -13,6 +13,8 @@ import java.util.List;
  * Created by chenyun on 2019/5/29.
  *
  * storm TopN
+ *
+ * TODO 全局排序---考虑衰减系数
  */
 public class RankBolt extends BaseBasicBolt {
 

@@ -14,17 +14,8 @@ public class SimilarityRes implements Serializable {
 
     private String stock;
 
-    private double s1;
-
-    private double s2;
-
-    private double s3;
-
-    private double s4;
-
-    private double s5;
-
-    private double s6;
 
     private Map<String,Double> similarityMap = new HashMap<>();
+
+    private Map<String,Double[]> trendMap = new HashMap<>();
 }
