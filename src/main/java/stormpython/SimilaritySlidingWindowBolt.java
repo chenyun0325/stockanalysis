@@ -120,9 +120,8 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                 double amount = curData.getAmount();
 
 
-                SynchronizedDescriptiveStatistics stockVolumeWindow =
-                        stock_volume_window_map.putIfAbsent(code, new SynchronizedDescriptiveStatistics(windowSize));
-                stockVolumeWindow.addValue(amount);
+                SynchronizedDescriptiveStatistics stockVolumeWindow =windowData(stock_volume_window_map,code,amount,windowSize);
+
 
 
 
@@ -131,10 +130,8 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                  */
                 double priDiff = (curData.getPrice() - preData.getPrice()) / preData.getPrice();
 
-                SynchronizedDescriptiveStatistics stockPriPreDiffWindow =
-                        stock_window_map.putIfAbsent(code, new SynchronizedDescriptiveStatistics(windowSize));
+                SynchronizedDescriptiveStatistics stockPriPreDiffWindow = windowData(stock_window_map,code,priDiff,windowSize);
 
-                stockPriPreDiffWindow.addValue(priDiff);
 
                 long dataCount = stockPriPreDiffWindow.getN();
 
@@ -168,9 +165,7 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                          */
 
                         String codeIndexKey = Joiner.on("_").join(code, indexKey);
-                        SynchronizedDescriptiveStatistics stockPriceIndexDiffWindow = stock_window_map
-                                .putIfAbsent(codeIndexKey, new SynchronizedDescriptiveStatistics(windowSize));
-                        stockPriceIndexDiffWindow.addValue(priceIndexDiff);
+                        SynchronizedDescriptiveStatistics stockPriceIndexDiffWindow = windowData(stock_window_map,codeIndexKey,priceIndexDiff,windowSize);
 
 
                         long priceIndexDiffCount = stockPriceIndexDiffWindow.getN();
@@ -210,8 +205,8 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                         /**
                          * 计算相似度(不剔除指数影响)
                          */
-                        SynchronizedDescriptiveStatistics indexPriPreDiffWindow = stock_window_map.putIfAbsent(indexKey,
-                                new SynchronizedDescriptiveStatistics(windowSize));
+                        SynchronizedDescriptiveStatistics indexPriPreDiffWindow = getPreWindow(stock_window_map,indexKey,windowSize);
+
 
 
                         calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset1,
@@ -224,8 +219,8 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                         /**
                          * TODO 趋势符号(不剔除指数影响)
                          */
-                        SynchronizedDescriptiveStatistics indexVolumeWindow = stock_volume_window_map
-                                .putIfAbsent(indexKey, new SynchronizedDescriptiveStatistics(windowSize));
+                        SynchronizedDescriptiveStatistics indexVolumeWindow = getPreWindow(stock_volume_window_map,indexKey,windowSize);
+
 
                         calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
                                 indexPriPreDiffWindow, offset1, indexKey);
@@ -255,11 +250,9 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
             double priceCloseDiff = (curData.getPrice() - curData.getPre_close()) / curData.getPre_close();
 
             String codeCloseKey = Joiner.on("_").join(code, "close");
-            SynchronizedDescriptiveStatistics stockPriCloseDiffWindow =
-                    stock_window_map.putIfAbsent(codeCloseKey, new SynchronizedDescriptiveStatistics(windowSize));
-            if (stockPriCloseDiffWindow != null) {
-                stockPriCloseDiffWindow.addValue(priceCloseDiff);
-            }
+
+            SynchronizedDescriptiveStatistics stockPriCloseDiffWindow = windowData(stock_window_map,codeCloseKey,priceCloseDiff,windowSize);
+
 
 
 
@@ -281,6 +274,28 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
         Map<String, Object> conf = new HashMap<String, Object>();
         conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, emitFrequencyInSeconds);
         return conf;
+    }
+
+
+    public SynchronizedDescriptiveStatistics windowData(Map<String, SynchronizedDescriptiveStatistics> map,String key,double data,int windowSize){
+        SynchronizedDescriptiveStatistics dataWindow = new SynchronizedDescriptiveStatistics(windowSize);
+
+        SynchronizedDescriptiveStatistics preWindow = map.putIfAbsent(key, dataWindow);
+        if (preWindow == null){
+            preWindow = dataWindow;
+        }
+        preWindow.addValue(data);
+        return preWindow;
+    }
+
+    public SynchronizedDescriptiveStatistics getPreWindow(Map<String, SynchronizedDescriptiveStatistics> map,String key,int windowSize){
+        SynchronizedDescriptiveStatistics dataWindow = new SynchronizedDescriptiveStatistics(windowSize);
+
+        SynchronizedDescriptiveStatistics preWindow = map.putIfAbsent(key, dataWindow);
+        if (preWindow == null){
+            preWindow = dataWindow;
+        }
+        return preWindow;
     }
 
     /**
@@ -477,6 +492,10 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
             double[] indexArraySub = Arrays.copyOfRange(b.getValues(), offset, (int) minCount);
 
             double similarityCal = similarityCal(stockArraySub, indexArraySub);
+
+            /**
+             * TODO 拼接时间字符串_滚动窗口
+             */
 
             String indexOffset = Joiner.on("_").join(indexKey, offset);
 

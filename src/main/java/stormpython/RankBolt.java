@@ -14,7 +14,13 @@ import java.util.List;
  *
  * storm TopN
  *
- * TODO 全局排序---考虑衰减系数
+ * TODO
+ * 1.全局排序---考虑衰减系数
+ * 2.滚动窗口(聚合计算---sum(count))
+ *   时间戳合并
+ *   或
+ *   窗口数据合并
+ *
  */
 public class RankBolt extends BaseBasicBolt {
 
