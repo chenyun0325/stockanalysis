@@ -50,10 +50,10 @@ class FsRealSpout(storm.Spout):
                    for i,row in results.iterrows():
                      code = row['code']
                      json={}
-                     if row['name'] == '上证指数':
-                        code = 'sz'
-                     if row['name'] == '上证50':
-                        code = 'sz50'
+                     if row['name'].replace(' ','')==u'上证指数':
+                        code='sh'
+                     if row['name'].replace(' ','')==u'上证50':
+                        code='sz50'
                      json['name']=row['name']
                      json['code']=code
                      json['date']=row['date']
