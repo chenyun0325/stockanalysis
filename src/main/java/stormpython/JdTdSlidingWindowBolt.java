@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 定时发射数据
  * http://www.2cto.com/net/201605/512041.html
  */
-public class Bolt2 extends BaseBasicBolt {
+public class JdTdSlidingWindowBolt extends BaseBasicBolt {
 
   static Logger log_error = LoggerFactory.getLogger("errorfile");
 
@@ -69,7 +69,7 @@ public class Bolt2 extends BaseBasicBolt {
   //必须static ? 因为 blot可以分发到不同jvm吗？？
   private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
  // private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
-  public Bolt2(double filter_mount, double filter_per, int slide_size) {
+  public JdTdSlidingWindowBolt(double filter_mount, double filter_per, int slide_size) {
     this.filter_mount = filter_mount;
     this.filter_per = filter_per;
     this.slide_size = slide_size;
@@ -84,7 +84,7 @@ public class Bolt2 extends BaseBasicBolt {
       FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
       //添加异步db数据存储
       System.out.println("------------"+fsPKQuene);
-      fsPKQuene.put(fsdata);
+      //fsPKQuene.put(fsdata);
       code_map = transfer(code_map, code, fsdata);
       //处理单个数据----每新增1个数据分析一次
       FsIndexRes indexRes = this.process.process(fsdata);

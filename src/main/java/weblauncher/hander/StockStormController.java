@@ -31,28 +31,26 @@ public class StockStormController {
   public void stormStart(StockStormQuery query, HttpServletResponse res) {
     try {
       TopologyBuilder builder = new TopologyBuilder();
-//      Bolt2 bolt = new Bolt2(query.getFilter_mount(), query.getFilter_per(), query.getSlide_size());
-//      BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
+      JdTdSlidingWindowBolt bolt = new JdTdSlidingWindowBolt(query.getFilter_mount(), query.getFilter_per(), query.getSlide_size());
+      BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
       builder.setSpout("FsRealSpout", new StockbatchSpout(Constant.stock_all, "4"), 1);
-//      splitBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
-//      builder.setBolt("slidBolt", new SlidingWindowBolt(query.getMax_size(), query.getWind_size(),
-//              query.getPrice_dif_var(), query.getAmount(),
-//              query.getPrice_dif_var1(),
-//              query.getAmount1()), 2)
-//          .fieldsGrouping("SplitBolt", new Fields("code"));
-      //builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
-//      List<Object> whiteList = new ArrayList<>();
-//      whiteList.add("300562");
-//      whiteList.add("601229");
+      splitBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
+      builder.setBolt("slidBolt", new JDSlidingWindowBolt(query.getMax_size(), query.getWind_size(),
+              query.getPrice_dif_var(), query.getAmount(),
+              query.getPrice_dif_var1(),
+              query.getAmount1()), 2)
+          .fieldsGrouping("SplitBolt", new Fields("code"));
+     // builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
+
       String[] stockIndexArray = Constant.stock_index_code.split(",");
       List<String> stockIndexList = Arrays.asList(stockIndexArray);
-      builder.setBolt("diffBlot",new DiffBolt(),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+      //builder.setBolt("diffBlot",new DiffBolt(),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
 
-      //builder.setBolt("",new SimilaritySlidingWindowBolt(10,3,5)).globalGrouping("");
+      //builder.setBolt("",new SimilarityTrendFlagCountSWBolt(10,3,5)).globalGrouping("");
 
-      builder.setBolt("similarityBolt",new SimilaritySlidingWindowBolt(5,1,3),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+      builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(5,1,3,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
 
-      builder.setBolt("rankBolt",new RankBolt(5,1,3,10)).globalGrouping("similarityBolt");
+      builder.setBolt("rankBolt",new GlobalRankBolt(5,1,3,10,15)).globalGrouping("similarityBolt");
 
       Config conf = new Config();
       conf.put(Config.TOPOLOGY_DEBUG, false);

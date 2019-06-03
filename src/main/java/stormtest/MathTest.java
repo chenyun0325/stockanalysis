@@ -26,5 +26,8 @@ public class MathTest {
         double evaluate = stat.getSumImpl().evaluate(values, startIndex, (int) (n - startIndex));
         stat.addValue(4d);
         double[] values1 = stat.getValues();
+
+        String[] stockIndexArray = Constant.stock_all.split(",");
+        System.out.println(stockIndexArray);
     }
 }

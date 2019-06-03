@@ -29,7 +29,7 @@ import java.util.stream.Stream;
  * 1.全局排序---考虑衰减系数 2.滚动窗口(聚合计算---sum(count)) 时间戳合并 或 窗口数据合并
  *
  */
-public class RankBolt extends BaseBasicBolt {
+public class GlobalRankBolt extends BaseBasicBolt {
 
 
     static Logger log_error = LoggerFactory.getLogger("errorfile");
@@ -86,11 +86,14 @@ public class RankBolt extends BaseBasicBolt {
     private static Map<String, LinkedList<SimilarityRes>> similarityMapWindow = new ConcurrentHashMap<>();
 
 
-    public RankBolt(int windowSize, int offset1, int offset2, int topN) {
+    private int emitFrequencyInSeconds = 10;
+
+    public GlobalRankBolt(int windowSize, int offset1, int offset2, int topN, int frequencyInSeconds) {
         this.windowSize = windowSize;
         this.offset1 = offset1;
         this.offset2 = offset2;
         this.topN = topN;
+        this.emitFrequencyInSeconds=frequencyInSeconds;
         /**
          * 数据输出线程
          */
@@ -99,12 +102,13 @@ public class RankBolt extends BaseBasicBolt {
             public void run() {
                 while (true) {
                     try {
-                        Thread.sleep(15000);
 
-                        if (lastSimilarityMap.size() > 100) {
+                        Thread.sleep(emitFrequencyInSeconds*1000);
+
+                        if (lastSimilarityMap.size() >= Constant.stockSize) {
                             rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_file_thead);
                         }
-                        if (sumSimilarityMap.size() > 100) {
+                        if (sumSimilarityMap.size() >= Constant.stockSize) {
                             rankOutPutFile(sumSimilarityMap, indexList, offset1, offset2, topN, rk_sum_file_thead);
                         }
 
@@ -153,7 +157,7 @@ public class RankBolt extends BaseBasicBolt {
                 }
             }
 
-            if (lastSimilarityMap.size() > 100) {
+            if (lastSimilarityMap.size() >= Constant.stockSize) {
 
                 Map<String, List<Map.Entry<String, SimilarityRes>>> resList = new HashMap<>();
 

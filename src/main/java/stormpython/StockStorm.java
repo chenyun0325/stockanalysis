@@ -27,12 +27,12 @@ public class StockStorm {
     ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
     ctx.start();
     TopologyBuilder builder = new TopologyBuilder();
-    Bolt2 bolt = new Bolt2(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
+    JdTdSlidingWindowBolt bolt = new JdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
     builder.setSpout("FsRealSpout" , new StockbatchSpout(Constant.stock_all,"4"), 1);
     // Split bolt splits sentences and emits words
     splitBolt.fieldsGrouping("FsRealSpout" , new Fields("code"));
-    builder.setBolt("slidBolt", new SlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
+    builder.setBolt("slidBolt", new JDSlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
         .fieldsGrouping("SplitBolt", new Fields("code"));
 
     // Counter consumes words and emits words and counts

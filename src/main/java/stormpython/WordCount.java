@@ -32,7 +32,7 @@ public class WordCount {
     int total = codes.length;
     int batch = total / batchsize;
     //int mod = total%batchsize;
-    Bolt2 bolt = new Bolt2(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
+    JdTdSlidingWindowBolt bolt = new JdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
     for (int i = 0; i <= batch; i++) {
       int start = i * batchsize;
@@ -51,7 +51,7 @@ public class WordCount {
       splitBolt.fieldsGrouping("FsRealSpout" + i, new Fields("code"));
       codeslist.clear();
     }
-    builder.setBolt("slidBolt", new SlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
+    builder.setBolt("slidBolt", new JDSlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
         .fieldsGrouping("SplitBolt", new Fields
             ("code"));
 
