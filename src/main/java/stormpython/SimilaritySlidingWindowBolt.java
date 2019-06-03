@@ -101,164 +101,171 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
     public void execute(Tuple input, BasicOutputCollector collector) {
 
         try {
-            String code = input.getString(0);
-            Object item = input.getValue(1);
-            JSONObject item_json = JSONObject.fromObject(item);
+            if (TupleHelpers.isTickTuple(input)) {
+                System.out.println("emit");
+                System.out.println(input);
+            } else {
+                String code = input.getString(0);
+                Object item = input.getValue(1);
+                JSONObject item_json = JSONObject.fromObject(item);
 
-            FsData curData = (FsData) JSONObject.toBean(item_json, FsData.class);
+                FsData curData = (FsData) JSONObject.toBean(item_json, FsData.class);
 
-            FsData preData = preFsDataMap.put(code, curData);
-
-            /**
-             * code已经存在数据
-             */
-            if (preData != null) {
-
-                /**
-                 * 量
-                 */
-                double amount = curData.getAmount();
-
-
-                SynchronizedDescriptiveStatistics stockVolumeWindow =windowData(stock_volume_window_map,code,amount,windowSize);
-
-
-
+                FsData preData = preFsDataMap.put(code, curData);
 
                 /**
-                 * 价
+                 * code已经存在数据&&价格非0
                  */
-                double priDiff = (curData.getPrice() - preData.getPrice()) / preData.getPrice();
-
-                SynchronizedDescriptiveStatistics stockPriPreDiffWindow = windowData(stock_window_map,code,priDiff,windowSize);
-
-
-                long dataCount = stockPriPreDiffWindow.getN();
-
-                /**
-                 * 指数白名单
-                 */
-                if (indexList.contains(code)) {
-                    Double prePriceDiff = preIndexPriceDiffMap.put(code, priDiff);
-                    System.out.println(prePriceDiff);
-                } else {
-
-                    Map<String, Double> similarityMap = new HashMap<>();
-
-                    Map<String, Double[]> trendMap = new HashMap<>();
+                if (preData != null && preData.getPrice()!=0d) {
 
                     /**
-                     * 指数比对相关----------------开始
+                     * 量
                      */
-                    for (int j = 0; j < indexList.size(); j++) {
+                    double amount = curData.getAmount();
 
-                        String indexKey = indexList.get(j);
 
-                        Double indexDiff = preIndexPriceDiffMap.getOrDefault(indexKey, 0d);
-                        double priceIndexDiff = priDiff - indexDiff;
+                    SynchronizedDescriptiveStatistics stockVolumeWindow =
+                            windowData(stock_volume_window_map, code, amount, windowSize);
+
+
+                    /**
+                     * 价
+                     */
+                    double priDiff = (curData.getPrice() - preData.getPrice()) / preData.getPrice();
+
+                    SynchronizedDescriptiveStatistics stockPriPreDiffWindow =
+                            windowData(stock_window_map, code, priDiff, windowSize);
+
+
+                    long dataCount = stockPriPreDiffWindow.getN();
+
+                    /**
+                     * 指数白名单
+                     */
+                    if (indexList.contains(code)) {
+                        Double prePriceDiff = preIndexPriceDiffMap.put(code, priDiff);
+                        System.out.println(prePriceDiff);
+                    } else {
+
+                        Map<String, Double> similarityMap = new HashMap<>();
+
+                        Map<String, Double[]> trendMap = new HashMap<>();
+
                         /**
-                         * code_indexKey
+                         * 指数比对相关----------------开始
                          */
+                        for (int j = 0; j < indexList.size(); j++) {
 
-                        /**
-                         * 计算指数_价格差异
-                         */
+                            String indexKey = indexList.get(j);
 
-                        String codeIndexKey = Joiner.on("_").join(code, indexKey);
-                        SynchronizedDescriptiveStatistics stockPriceIndexDiffWindow = windowData(stock_window_map,codeIndexKey,priceIndexDiff,windowSize);
+                            Double indexDiff = preIndexPriceDiffMap.getOrDefault(indexKey, 0d);
+                            double priceIndexDiff = priDiff - indexDiff;
+                            /**
+                             * code_indexKey
+                             */
+
+                            /**
+                             * 计算指数_价格差异
+                             */
+
+                            String codeIndexKey = Joiner.on("_").join(code, indexKey);
+                            SynchronizedDescriptiveStatistics stockPriceIndexDiffWindow =
+                                    windowData(stock_window_map, codeIndexKey, priceIndexDiff, windowSize);
 
 
-                        long priceIndexDiffCount = stockPriceIndexDiffWindow.getN();
+                            long priceIndexDiffCount = stockPriceIndexDiffWindow.getN();
 
 
-                        /**
-                         * N分钟价格差异累计涨幅(剔除指数) > rule_diff
-                         */
-                        if (priceIndexDiffCount > offset1) {
-                            double offset1Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
-                                    stockPriceIndexDiffWindow.getValues(), offset1,
-                                    (int) (priceIndexDiffCount - offset1));
+                            /**
+                             * N分钟价格差异累计涨幅(剔除指数) > rule_diff
+                             */
+                            if (priceIndexDiffCount > offset1) {
+                                double offset1Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
+                                        stockPriceIndexDiffWindow.getValues(), offset1,
+                                        (int) (priceIndexDiffCount - offset1));
+                            }
+
+                            if (priceIndexDiffCount > offset2) {
+                                double offset2Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
+                                        stockPriceIndexDiffWindow.getValues(), offset2,
+                                        (int) (priceIndexDiffCount - offset2));
+                            }
+
+
+                            /**
+                             * N分钟价格差异累计涨幅 > rule
+                             */
+                            if (dataCount > offset1) {
+                                double offset1Sum = stockPriPreDiffWindow.getSumImpl().evaluate(
+                                        stockPriPreDiffWindow.getValues(), offset1, (int) (dataCount - offset1));
+                            }
+
+                            if (dataCount > offset2) {
+                                double offset2Sum = stockPriPreDiffWindow.getSumImpl().evaluate(
+                                        stockPriPreDiffWindow.getValues(), offset2, (int) (dataCount - offset2));
+                            }
+
+
+                            /**
+                             * 计算相似度(不剔除指数影响)
+                             */
+                            SynchronizedDescriptiveStatistics indexPriPreDiffWindow =
+                                    getPreWindow(stock_window_map, indexKey, windowSize);
+
+
+                            calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset1,
+                                    indexKey);
+
+                            calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset2,
+                                    indexKey);
+
+
+                            /**
+                             * TODO 趋势符号(不剔除指数影响)
+                             */
+                            SynchronizedDescriptiveStatistics indexVolumeWindow =
+                                    getPreWindow(stock_volume_window_map, indexKey, windowSize);
+
+
+                            calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
+                                    indexPriPreDiffWindow, offset1, indexKey);
+
+                            calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
+                                    indexPriPreDiffWindow, offset2, indexKey);
+
                         }
 
-                        if (priceIndexDiffCount > offset2) {
-                            double offset2Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
-                                    stockPriceIndexDiffWindow.getValues(), offset2,
-                                    (int) (priceIndexDiffCount - offset2));
-                        }
+
+                            SimilarityRes similarityRes = SimilarityRes.builder().stock(code).similarityMap(similarityMap)
+                                    .trendMap(trendMap).build();
 
 
                         /**
-                         * N分钟价格差异累计涨幅 > rule
+                         * 窗口控制使用offset变相代替时间 而非使用时间
                          */
-                        if (dataCount > offset1) {
-                            double offset1Sum = stockPriPreDiffWindow.getSumImpl()
-                                    .evaluate(stockPriPreDiffWindow.getValues(), offset1, (int) (dataCount - offset1));
-                        }
-
-                        if (dataCount > offset2) {
-                            double offset2Sum = stockPriPreDiffWindow.getSumImpl()
-                                    .evaluate(stockPriPreDiffWindow.getValues(), offset2, (int) (dataCount - offset2));
-                        }
-
-
-
-                        /**
-                         * 计算相似度(不剔除指数影响)
-                         */
-                        SynchronizedDescriptiveStatistics indexPriPreDiffWindow = getPreWindow(stock_window_map,indexKey,windowSize);
-
-
-
-                        calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset1,
-                                indexKey);
-
-                        calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset2,
-                                indexKey);
-
-
-                        /**
-                         * TODO 趋势符号(不剔除指数影响)
-                         */
-                        SynchronizedDescriptiveStatistics indexVolumeWindow = getPreWindow(stock_volume_window_map,indexKey,windowSize);
-
-
-                        calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
-                                indexPriPreDiffWindow, offset1, indexKey);
-
-                        calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
-                                indexPriPreDiffWindow, offset2, indexKey);
+                            collector.emit(new Values(code, similarityRes));
 
                     }
 
-                    SimilarityRes similarityRes =
-                            SimilarityRes.builder().stock(code).similarityMap(similarityMap).trendMap(trendMap).build();
 
-                    /**
-                     * 窗口控制使用offset变相代替时间 而非使用时间
-                     */
-                    if (TupleHelpers.isTickTuple(input)) {
-                        System.out.println("emit");
-                    }
-                    collector.emit(new Values(code, similarityRes));
                 }
+                /**
+                 * 当前涨跌幅(相对昨天closePrice)
+                 */
+                double priceCloseDiff = (curData.getPrice() - curData.getPre_close()) / curData.getPre_close();
 
+                String codeCloseKey = Joiner.on("_").join(code, "close");
 
+                SynchronizedDescriptiveStatistics stockPriCloseDiffWindow =
+                        windowData(stock_window_map, codeCloseKey, priceCloseDiff, windowSize);
             }
-            /**
-             * 当前涨跌幅(相对昨天closePrice)
-             */
-            double priceCloseDiff = (curData.getPrice() - curData.getPre_close()) / curData.getPre_close();
-
-            String codeCloseKey = Joiner.on("_").join(code, "close");
-
-            SynchronizedDescriptiveStatistics stockPriCloseDiffWindow = windowData(stock_window_map,codeCloseKey,priceCloseDiff,windowSize);
 
 
 
-
-            //collector.emit(new Values(code));
+            // collector.emit(new Values(code));
         } catch (Exception e) {
             log_error.error("SimilaritySlidingWindowBolt error", e);
+            System.out.println(e);
         }
 
     }
@@ -277,22 +284,24 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
     }
 
 
-    public SynchronizedDescriptiveStatistics windowData(Map<String, SynchronizedDescriptiveStatistics> map,String key,double data,int windowSize){
+    public SynchronizedDescriptiveStatistics windowData(Map<String, SynchronizedDescriptiveStatistics> map, String key,
+            double data, int windowSize) {
         SynchronizedDescriptiveStatistics dataWindow = new SynchronizedDescriptiveStatistics(windowSize);
 
         SynchronizedDescriptiveStatistics preWindow = map.putIfAbsent(key, dataWindow);
-        if (preWindow == null){
+        if (preWindow == null) {
             preWindow = dataWindow;
         }
         preWindow.addValue(data);
         return preWindow;
     }
 
-    public SynchronizedDescriptiveStatistics getPreWindow(Map<String, SynchronizedDescriptiveStatistics> map,String key,int windowSize){
+    public SynchronizedDescriptiveStatistics getPreWindow(Map<String, SynchronizedDescriptiveStatistics> map,
+            String key, int windowSize) {
         SynchronizedDescriptiveStatistics dataWindow = new SynchronizedDescriptiveStatistics(windowSize);
 
         SynchronizedDescriptiveStatistics preWindow = map.putIfAbsent(key, dataWindow);
-        if (preWindow == null){
+        if (preWindow == null) {
             preWindow = dataWindow;
         }
         return preWindow;
@@ -462,16 +471,16 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
                     } else {
                         /**
                          * 弱势 ----涨不过大盘或者跌超过大盘
-                          */
+                         */
                         a4 = a4 + v / vAvg * (stock[i] - index[i]);
                     }
 
                 }
             }
-            trendDiffCount[0]=a1;
-            trendDiffCount[1]=a2;
-            trendDiffCount[2]=a3;
-            trendDiffCount[3]=a4;
+            trendDiffCount[0] = a1;
+            trendDiffCount[1] = a2;
+            trendDiffCount[2] = a3;
+            trendDiffCount[3] = a4;
         }
 
         return trendDiffCount;
@@ -497,6 +506,13 @@ public class SimilaritySlidingWindowBolt extends BaseBasicBolt {
              * TODO 拼接时间字符串_滚动窗口
              */
 
+            if (Double.isNaN(similarityCal)){
+                System.out.println(similarityCal);
+            }
+
+            if (Double.isInfinite(similarityCal)){
+                System.out.println(similarityCal);
+            }
             String indexOffset = Joiner.on("_").join(indexKey, offset);
 
             map.put(indexOffset, similarityCal);

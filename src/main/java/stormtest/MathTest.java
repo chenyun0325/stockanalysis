@@ -4,7 +4,9 @@ import datacrawler.Constant;
 import org.apache.commons.math3.stat.descriptive.SynchronizedDescriptiveStatistics;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by chenyun on 2019/5/28.
@@ -24,6 +26,5 @@ public class MathTest {
         double evaluate = stat.getSumImpl().evaluate(values, startIndex, (int) (n - startIndex));
         stat.addValue(4d);
         double[] values1 = stat.getValues();
-
     }
 }
