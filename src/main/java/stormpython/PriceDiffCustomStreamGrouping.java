@@ -1,6 +1,5 @@
 package stormpython;
 
-import net.sf.json.JSONArray;
 import org.apache.storm.generated.GlobalStreamId;
 import org.apache.storm.grouping.CustomStreamGrouping;
 import org.apache.storm.grouping.PartialKeyGrouping;
@@ -40,12 +39,10 @@ public class PriceDiffCustomStreamGrouping extends PartialKeyGrouping implements
         if (fieldsx!= null){
             List<Object> selectedFields = outFieldsx.select(fieldsx, values);
 
-            System.out.println("diffField:"+selectedFields+"json:"+ JSONArray.fromObject(selectedFields).toString());
             /**
              * 白名单
              */
             if (selectedFields!=null&&whiteList.contains(selectedFields.get(0))){
-                System.out.println("white,"+whiteList+","+selectedFields);
                 return targetTasksx;
             }
         }

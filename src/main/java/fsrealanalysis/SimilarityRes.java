@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,5 +27,5 @@ public class SimilarityRes implements Serializable {
     private Map<String,Double> similarityMap = new HashMap<>();
 
 
-    private Map<String,Double[]> trendMap = new HashMap<>();
+    private Map<String,List<Double>> trendMap = new HashMap<>();
 }

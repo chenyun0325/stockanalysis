@@ -48,9 +48,9 @@ public class StockStormController {
 
       //builder.setBolt("",new SimilarityTrendFlagCountSWBolt(10,3,5)).globalGrouping("");
 
-      builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(5,1,3,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+      builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(10,2,5,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
 
-      builder.setBolt("rankBolt",new GlobalRankBolt(5,1,3,10,15)).globalGrouping("similarityBolt");
+      builder.setBolt("rankBolt",new GlobalRankBolt(10,2,5,30,15)).globalGrouping("similarityBolt");
 
       Config conf = new Config();
       conf.put(Config.TOPOLOGY_DEBUG, false);

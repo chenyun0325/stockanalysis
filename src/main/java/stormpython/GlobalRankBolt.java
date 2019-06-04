@@ -19,7 +19,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Created by chenyun on 2019/5/29.
@@ -93,7 +92,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
         this.offset1 = offset1;
         this.offset2 = offset2;
         this.topN = topN;
-        this.emitFrequencyInSeconds=frequencyInSeconds;
+        this.emitFrequencyInSeconds = frequencyInSeconds;
         /**
          * 数据输出线程
          */
@@ -103,7 +102,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 while (true) {
                     try {
 
-                        Thread.sleep(emitFrequencyInSeconds*1000);
+                        Thread.sleep(emitFrequencyInSeconds * 1000);
 
                         if (lastSimilarityMap.size() >= Constant.stockSize) {
                             rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_file_thead);
@@ -180,7 +179,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
                     resList.put(keyOffset1Descending, keyOffset1ListDescending);
                     resList.put(keyOffset2Asceding, keyOffset2ListAscending);
                     resList.put(keyOffset2Descending, keyOffset2ListDescending);
-                   // rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_file_thead);
+                    // rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_file_thead);
 
                 }
                 System.out.println(resList);
@@ -206,20 +205,22 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 .collect(Collectors.toSet());
         Map<String, Double> similarityMap = new HashMap<>();
 
-        Map<String, Double[]> trendMap = new HashMap<>();
+        Map<String, List<Double>> trendMap = new HashMap<>();
 
         for (String key : keySet) {
             double sum = o1.getSimilarityMap().get(key) + o2.getSimilarityMap().get(key);
             similarityMap.put(key, sum);
-            double[] o1TrendMap = Stream.of(o1.getTrendMap().get(key)).mapToDouble(i -> i.doubleValue()).toArray();
-            double[] o2TrendMap = Stream.of(o2.getTrendMap().get(key)).mapToDouble(i -> i.doubleValue()).toArray();
-            int length = o1TrendMap.length;
-            Double[] trendMapM = new Double[length];
+
+            List<Double> o1IndexList = o1.getTrendMap().get(key);
+            List<Double> o2IndexList = o2.getTrendMap().get(key);
+
+            int length = o1IndexList.size();
+            List<Double> trendMapMList = new ArrayList<>();
             for (int i = 0; i < length; i++) {
-                trendMapM[i] = o1TrendMap[i] + o2TrendMap[i];
+                trendMapMList.add(o1IndexList.get(i)+o2IndexList.get(i));
             }
 
-            trendMap.put(key, trendMapM);
+            trendMap.put(key, trendMapMList);
         }
         return SimilarityRes.builder().stock(o1.getStock()).trendMap(trendMap).similarityMap(similarityMap).build();
     }

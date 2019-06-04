@@ -79,11 +79,11 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
     try {
       String code = input.getString(0);
       Object item = input.getValue(1);
-      System.out.println(code);
+      //System.out.println(code);
       JSONObject item_json = JSONObject.fromObject(item);
       FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
       //添加异步db数据存储
-      System.out.println("------------"+fsPKQuene);
+      //System.out.println("------------"+fsPKQuene);
       //fsPKQuene.put(fsdata);
       code_map = transfer(code_map, code, fsdata);
       //处理单个数据----每新增1个数据分析一次
@@ -157,8 +157,7 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
       // TODO: 2016/12/3 下一个bolt进行时序数据分析
       //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1?? FileWriter fw = null;
 
-      MessageId messageId = input.getMessageId();
-      System.err.println(code);
+
       //System.err.println("对消息加工第1次-------[arg0]:" + code + "---[arg2]:" + item + "------->" + code);
       if (code != null) {
         collector.emit(new Values(code, indexRes, price_var_res));

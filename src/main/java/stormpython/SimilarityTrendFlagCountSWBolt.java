@@ -17,10 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stormpython.util.TupleHelpers;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -162,7 +159,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
                             Map<String, Double> similarityMap = new HashMap<>();
 
-                            Map<String, Double[]> trendMap = new HashMap<>();
+                            Map<String, List<Double>> trendMap = new HashMap<>();
 
                             /**
                              * 指数比对相关----------------开始
@@ -374,7 +371,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
      * @param indexKey
      * @return
      */
-    public Map<String, Double[]> calcTrendPvMap(Map<String, Double[]> map,
+    public Map<String, List<Double>> calcTrendPvMap(Map<String, List<Double>> map,
             SynchronizedDescriptiveStatistics volumeStockWind, SynchronizedDescriptiveStatistics volumeIndexWind,
             SynchronizedDescriptiveStatistics stockPriceWind, SynchronizedDescriptiveStatistics indexPriceWind,
             int offset, String indexKey) {
@@ -393,7 +390,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
             double[] indexVArraySub = Arrays.copyOfRange(volumeIndexWind.getValues(), offset, (int) minCount);
 
-            Double[] trendCal = trendCalPv(indexArraySub, stockArraySub, indexVArraySub, stockVArraySub);
+            List<Double> trendCal = trendCalPv(indexArraySub, stockArraySub, indexVArraySub, stockVArraySub);
 
             String indexOffset = Joiner.on("_").join(indexKey, offset);
 
@@ -435,9 +432,9 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
      * @param vStock
      * @return
      */
-    public Double[] trendCalPv(double[] index, double[] stock, double[] vIndex, double[] vStock) {
+    public List<Double> trendCalPv(double[] index, double[] stock, double[] vIndex, double[] vStock) {
 
-        Double[] trendDiffCount = new Double[4];
+        List<Double> trendDiffCount = new ArrayList<>(4);
 
         if (index.length == stock.length) {
 
@@ -491,10 +488,10 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
                 }
             }
-            trendDiffCount[0] = a1;
-            trendDiffCount[1] = a2;
-            trendDiffCount[2] = a3;
-            trendDiffCount[3] = a4;
+            trendDiffCount.add(a1);
+            trendDiffCount.add(a2);
+            trendDiffCount.add(a3);
+            trendDiffCount.add(a4);
         }
 
         return trendDiffCount;
