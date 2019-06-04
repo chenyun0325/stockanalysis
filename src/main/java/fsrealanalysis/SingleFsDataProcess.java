@@ -64,35 +64,43 @@ public class SingleFsDataProcess implements FsDataProcess ,Serializable{
     }
     double a1_p = a1_m / a_all_m;
     double b1_p = b1_m / b_all_m;
+
+
     input.setTimestamp(time_stamp_long);
     FsIndexRes indexRes = new FsIndexRes();
-    indexRes.setFsData(input);
-    indexRes.setTime_stamp(time_stamp);
-    indexRes.setTime_stamp_long(time_stamp_long);
-    indexRes.setKp_price_dif(kp_price_dif);
-    indexRes.setPrice_dif(price_dif);
-    indexRes.setYy_dif(yy_dif);
-    indexRes.setB1_m(b1_m);
-    indexRes.setB2_m(b2_m);
-    indexRes.setB3_m(b3_m);
-    indexRes.setB4_m(b5_m);
-    indexRes.setB5_m(b5_m);
-    indexRes.setB_all_m(b_all_m);
-    indexRes.setA1_m(a1_m);
-    indexRes.setA2_m(a2_m);
-    indexRes.setA3_m(a3_m);
-    indexRes.setA4_m(a4_m);
-    indexRes.setA5_m(a5_m);
-    indexRes.setA_all_m(a_all_m);
-    indexRes.setPer(per);
-    indexRes.setB_ge_s(b_ge_s);
-    indexRes.setJd_per(jd_per);
-    indexRes.setJd_b_ge_s(jd_b_ge_s);
-    indexRes.setA1_p(a1_p);
-    indexRes.setB1_p(b1_p);
-    indexRes.setCurr_time_stamp(cur_time_stamp);
-    indexRes.setA_var(a_var);
-    indexRes.setB_var(b_var);
+    if (Double.isInfinite(kp_price_dif)||Double.isInfinite(yy_dif)){
+      indexRes.setTpFlag(true);
+    }else if ((b_all_m==0d||a_all_m==0d||a1_m==0d || b1_m == 0d)&&Math.abs(price_dif)>9.8d){
+      indexRes.setZdtFlag(true);
+    }else {
+      indexRes.setFsData(input);
+      indexRes.setTime_stamp(time_stamp);
+      indexRes.setTime_stamp_long(time_stamp_long);
+      indexRes.setKp_price_dif(kp_price_dif);
+      indexRes.setPrice_dif(price_dif);
+      indexRes.setYy_dif(yy_dif);
+      indexRes.setB1_m(b1_m);
+      indexRes.setB2_m(b2_m);
+      indexRes.setB3_m(b3_m);
+      indexRes.setB4_m(b5_m);
+      indexRes.setB5_m(b5_m);
+      indexRes.setB_all_m(b_all_m);
+      indexRes.setA1_m(a1_m);
+      indexRes.setA2_m(a2_m);
+      indexRes.setA3_m(a3_m);
+      indexRes.setA4_m(a4_m);
+      indexRes.setA5_m(a5_m);
+      indexRes.setA_all_m(a_all_m);
+      indexRes.setPer(per);
+      indexRes.setB_ge_s(b_ge_s);
+      indexRes.setJd_per(jd_per);
+      indexRes.setJd_b_ge_s(jd_b_ge_s);
+      indexRes.setA1_p(a1_p);
+      indexRes.setB1_p(b1_p);
+      indexRes.setCurr_time_stamp(cur_time_stamp);
+      indexRes.setA_var(a_var);
+      indexRes.setB_var(b_var);
+    }
     return indexRes;
   }
 }

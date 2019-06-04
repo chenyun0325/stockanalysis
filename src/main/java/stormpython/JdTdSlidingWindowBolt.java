@@ -1,5 +1,6 @@
 package stormpython;
 
+import com.google.common.collect.Lists;
 import fsanalysis.DateUtil;
 import fsrealanalysis.FsData;
 import fsrealanalysis.FsIndexRes;
@@ -27,6 +28,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static datacrawler.Constant.stock_index_code;
 
 /**
  * Created by chenyun on 16/2/2.
@@ -66,6 +69,7 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
   private String yd_file ="/Users/chenyun/stockData/holders/yd";
   private String td_file ="/Users/chenyun/stockData/holders/td";
 
+  private List<String> indexList = Lists.newArrayList(stock_index_code.split(","));
   //必须static ? 因为 blot可以分发到不同jvm吗？？
   private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
  // private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
@@ -78,89 +82,108 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
   public void execute(Tuple input, BasicOutputCollector collector) {
     try {
       String code = input.getString(0);
-      Object item = input.getValue(1);
-      //System.out.println(code);
-      JSONObject item_json = JSONObject.fromObject(item);
-      FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
-      //添加异步db数据存储
-      //System.out.println("------------"+fsPKQuene);
-      //fsPKQuene.put(fsdata);
-      code_map = transfer(code_map, code, fsdata);
-      //处理单个数据----每新增1个数据分析一次
-      FsIndexRes indexRes = this.process.process(fsdata);
-      boolean b_ge_s = indexRes.isB_ge_s();
-      double per = indexRes.getPer();
-      double a_all_m = indexRes.getA_all_m();//可以利用平均值
-      double b_all_m = indexRes.getB_all_m();
-      // TODO: 2016/12/4 考虑涨停板和跌停板
-      double price_dif = indexRes.getPrice_dif();//涨跌幅度
-      if (b_ge_s) {
-        if (per > filter_per && b_all_m > filter_mount) {//托单
-          code_td_map = transferRes(code_td_map, code, indexRes);
-          String dateStr= DateUtil.convert2dateStr(new Date());
-          String file=td_file+"_"+filter_mount+"_"+dateStr+".txt";
-          printRes(file,code_td_map);
+      if (!indexList.contains(code))
+      {
+        Object item = input.getValue(1);
+        //System.out.println(code);
+        JSONObject item_json = JSONObject.fromObject(item);
+        FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
+        //添加异步db数据存储
+        //System.out.println("------------"+fsPKQuene);
+        //fsPKQuene.put(fsdata);
+        code_map = transfer(code_map, code, fsdata);
+        //处理单个数据----每新增1个数据分析一次
+        FsIndexRes indexRes = this.process.process(fsdata);
+        boolean b_ge_s = indexRes.isB_ge_s();
+        double per = indexRes.getPer();
+        double a_all_m = indexRes.getA_all_m();//可以利用平均值
+        double b_all_m = indexRes.getB_all_m();
+        // TODO: 2016/12/4 考虑涨停板和跌停板
+        double price_dif = indexRes.getPrice_dif();//涨跌幅度
+
+        /**
+         * 停牌or涨跌停
+         */
+        if (!indexRes.isTpFlag()&&!indexRes.isZdtFlag()) {
+          if (price_dif>0){
+            System.out.println("zt:"+code);
+          }else {
+            System.out.println("dt:"+code);
+          }
+        }else {
+          if (b_ge_s) {
+            if (per > filter_per && b_all_m > filter_mount) {//托单
+              code_td_map = transferRes(code_td_map, code, indexRes);
+              String dateStr = DateUtil.convert2dateStr(new Date());
+              String file = td_file + "_" + filter_mount + "_" + dateStr + ".txt";
+              printRes(file, code_td_map);
+            }
+          } else {
+            if (per > filter_per && a_all_m > filter_mount) {//压单
+              code_yd_map = transferRes(code_yd_map, code, indexRes);
+              String dateStr = DateUtil.convert2dateStr(new Date());
+              String file = yd_file + "_" + filter_mount + "_" + dateStr + ".txt";
+              printRes(file, code_yd_map);
+            }
+          }
         }
-      } else {
-        if (per > filter_per && a_all_m > filter_mount) {//压单
-          code_yd_map = transferRes(code_yd_map, code, indexRes);
-          String dateStr= DateUtil.convert2dateStr(new Date());
-          String file=yd_file+"_"+filter_mount+"_"+dateStr+".txt";
-          printRes(file,code_yd_map);
+
+        // TODO: 2016/12/4 分析结果存储
+
+        //处理窗口数据,价格
+        double pricePer = indexRes.getPer();
+
+        if (!Double.isInfinite(pricePer)) {
+          double stamp = indexRes.getTime_stamp_long();
+          SynchronizedDescriptiveStatistics stats = stats_map.get(code);
+          SynchronizedDescriptiveStatistics stats_index = stats_map_index.get(code);
+          SlidingWindowPriceRes price_var_res = null;
+          if (stats == null) {
+            stats = new SynchronizedDescriptiveStatistics(slide_size);
+            stats_index = new SynchronizedDescriptiveStatistics(slide_size);
+            stats_index.addValue(stamp);
+            stats_map_index.put(code, stats_index);
+            stats.addValue(pricePer);
+            stats_map.put(code, stats);
+            String hash = indexRes.getTime_stamp_long() + "_" + code;
+            code_hash_map.put(code, hash);
+          } else {
+            String pre_hash = code_hash_map.get(code);
+            String hash = indexRes.getTime_stamp_long() + "_" + code;
+            if (!hash.equals(pre_hash)) {
+              stats.addValue(pricePer);
+              stats_index.addValue(stamp);
+              code_hash_map.put(code, hash);
+            }
+          }
+          long n = stats.getN();//管道中的数量
+          if (n == slide_size) {//积累达到一定量才计算方差
+            double[] var_trans = new double[slide_size];
+            double sum = stats.getSum();
+            double[] values = stats.getValues();
+            for (int i = 0; i < slide_size; i++) {
+              var_trans[i] = values[i] / sum;
+            }
+            double var_p = std.evaluate(var_trans);
+            price_var_res = new SlidingWindowPriceRes();
+            long start_stamp = (long) stats_index.getMin();
+            price_var_res.setStart(start_stamp);
+            price_var_res.setEnd((long) stamp);
+            price_var_res.setVar_p(var_p);
+            price_var_res.setDatas(values);
+
+          }
+
+          // TODO: 2016/12/3 下一个bolt进行时序数据分析
+          //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1?? FileWriter fw = null;
+
+
+          if (code != null) {
+            collector.emit(new Values(code, indexRes, price_var_res));
+          }
+        }else {
+          System.out.println(code+":zt/dt");
         }
-      }
-
-      // TODO: 2016/12/4 分析结果存储
-
-      //处理窗口数据,价格
-      double price = indexRes.getPer();
-      double stamp = indexRes.getTime_stamp_long();
-      SynchronizedDescriptiveStatistics stats = stats_map.get(code);
-      SynchronizedDescriptiveStatistics stats_index = stats_map_index.get(code);
-      SlidingWindowPriceRes price_var_res = null;
-      if (stats == null) {
-        stats = new SynchronizedDescriptiveStatistics(slide_size);
-        stats_index = new SynchronizedDescriptiveStatistics(slide_size);
-        stats_index.addValue(stamp);
-        stats_map_index.put(code, stats_index);
-        stats.addValue(price);
-        stats_map.put(code, stats);
-        String hash = indexRes.getTime_stamp_long() +"_"+ code;
-        code_hash_map.put(code,hash);
-      } else {
-        String pre_hash = code_hash_map.get(code);
-        String hash = indexRes.getTime_stamp_long() +"_"+ code;
-        if (!hash.equals(pre_hash)){
-        stats.addValue(price);
-        stats_index.addValue(stamp);
-          code_hash_map.put(code,hash);
-        }
-      }
-      long n = stats.getN();//管道中的数量
-      if (n == slide_size) {//积累达到一定量才计算方差
-        double[] var_trans = new double[slide_size];
-        double sum = stats.getSum();
-        double[] values = stats.getValues();
-        for (int i = 0; i < slide_size; i++) {
-          var_trans[i] = values[i] / sum;
-        }
-        double var_p = std.evaluate(var_trans);
-        price_var_res = new SlidingWindowPriceRes();
-        long start_stamp = (long) stats_index.getMin();
-        price_var_res.setStart(start_stamp);
-        price_var_res.setEnd((long) stamp);
-        price_var_res.setVar_p(var_p);
-        price_var_res.setDatas(values);
-
-      }
-
-      // TODO: 2016/12/3 下一个bolt进行时序数据分析
-      //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1?? FileWriter fw = null;
-
-
-      //System.err.println("对消息加工第1次-------[arg0]:" + code + "---[arg2]:" + item + "------->" + code);
-      if (code != null) {
-        collector.emit(new Values(code, indexRes, price_var_res));
       }
     } catch (Exception e) {
       log_error.error("unexcept error:",e);

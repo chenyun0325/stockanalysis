@@ -478,15 +478,26 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                      * 强势---涨幅超过大盘或者抗跌
                      */
                     if (stock[i] - index[i] > 0) {
-                        a3 = a3 + v / vAvg * (stock[i] - index[i]);
+                        if (vAvg != 0d) {
+                            a3 = a3 + v / vAvg * (stock[i] - index[i]);
+                        }else {
+                            a3 = a3 +(stock[i] - index[i]);
+                        }
                     } else {
                         /**
                          * 弱势 ----涨不过大盘或者跌超过大盘
                          */
-                        a4 = a4 + v / vAvg * (stock[i] - index[i]);
+                        if (vAvg != 0d) {
+                            a4 = a4 + v / vAvg * (stock[i] - index[i]);
+                        }{
+                            a4 = a4 + (stock[i] - index[i]);
+                        }
                     }
 
                 }
+            }
+            if (Double.isNaN(a1)||Double.isInfinite(a1)||Double.isNaN(a2)||Double.isInfinite(a2)||Double.isNaN(a3)||Double.isInfinite(a3)||Double.isNaN(a4)||Double.isInfinite(a4)){
+                System.out.println("NaN");
             }
             trendDiffCount.add(a1);
             trendDiffCount.add(a2);

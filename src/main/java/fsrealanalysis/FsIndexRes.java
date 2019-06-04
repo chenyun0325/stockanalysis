@@ -6,6 +6,8 @@ package fsrealanalysis;
  */
 public class FsIndexRes {
   private FsData fsData;//原始数据
+  private boolean tpFlag;
+  private boolean zdtFlag;
   String time_stamp ;
   long time_stamp_long;
   long curr_time_stamp;
@@ -248,5 +250,21 @@ public class FsIndexRes {
 
   public void setYy_dif(double yy_dif) {
     this.yy_dif = yy_dif;
+  }
+
+  public boolean isTpFlag() {
+    return tpFlag;
+  }
+
+  public void setTpFlag(boolean tpFlag) {
+    this.tpFlag = tpFlag;
+  }
+
+  public boolean isZdtFlag() {
+    return zdtFlag;
+  }
+
+  public void setZdtFlag(boolean zdtFlag) {
+    this.zdtFlag = zdtFlag;
   }
 }
