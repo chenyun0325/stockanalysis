@@ -28,4 +28,13 @@ public class SimilarityRes implements Serializable {
 
 
     private Map<String,List<Double>> trendMap = new HashMap<>();
+
+
+    /**
+     * value:v1_v2_vN组成时间窗口
+     */
+    private Map<String,String> similarityWindMap = new HashMap<>();
+
+
+    private Map<String,List<String>> trendWindMap = new HashMap<>();
 }

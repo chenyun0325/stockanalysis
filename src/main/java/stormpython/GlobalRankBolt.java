@@ -82,6 +82,11 @@ public class GlobalRankBolt extends BaseBasicBolt {
      */
     private static Map<String, SimilarityRes> sumSimilarityMap = new ConcurrentHashMap<>();
 
+    /**
+     * 累计map窗口计算 key:index_offset value:剔除非offset指标
+     */
+    private static Map<String, SimilarityRes> sumSimilarityWindMap = new ConcurrentHashMap<>();
+
 
     /**
      * 时间窗口数据
@@ -154,15 +159,11 @@ public class GlobalRankBolt extends BaseBasicBolt {
             if (count % windowSize == offset1) {
                 similarityOffset = similarityResWindow.get(offset1 - 1);
                 String key1 = Joiner.on("_").join(code, offset1);
-                if (count > windowSize) {
-                    sumSimilarityMap.put(key1, sumMerger(similarityOffset, similarityRes, offset1));
-                }
+                calcSumAndWindSum(similarityRes, count, similarityOffset, key1,windowSize,sumSimilarityMap,sumSimilarityWindMap,offset1);
             } else if (count % windowSize == offset2) {
                 similarityOffset = similarityResWindow.get(offset2 - 1);
                 String key2 = Joiner.on("_").join(code, offset2);
-                if (count > windowSize) {
-                    sumSimilarityMap.put(key2, sumMerger(similarityOffset, similarityRes, offset2));
-                }
+                calcSumAndWindSum(similarityRes, count, similarityOffset, key2,windowSize,sumSimilarityMap,sumSimilarityWindMap,offset2);
             }
 
 
@@ -172,15 +173,34 @@ public class GlobalRankBolt extends BaseBasicBolt {
         }
     }
 
+    private void calcSumAndWindSum(SimilarityRes similarityRes, long count, SimilarityRes similarityOffset, String key, int windowSize, Map<String, SimilarityRes> sumSimilarityMap, Map<String, SimilarityRes> sumSimilarityWindMap, int offset) {
+
+        if (count > windowSize) {
+
+            SimilarityRes merger = sumMerger(similarityOffset, similarityRes, offset,false);
+
+            SimilarityRes preMerger = sumSimilarityMap.put(key, merger);
+            if (preMerger == null){
+                preMerger = merger;
+            }
+            preMerger = sumSimilarityWindMap.get(key)== null?preMerger:sumSimilarityWindMap.get(key);
+
+            sumSimilarityWindMap.put(key,sumMerger(preMerger,similarityRes,offset,true));
+
+        }
+    }
+
     /**
      * 指标数据合并
      * 
-     * @param o1
-     * @param o2
+     * @param o1 offset之前数据
+     * @param o2 最新数据
      * @param offset
+     * @param windOp 窗口拼接操作
      * @return
      */
-    public SimilarityRes sumMerger(SimilarityRes o1, SimilarityRes o2, int offset) {
+    public SimilarityRes sumMerger(SimilarityRes o1, SimilarityRes o2, int offset,boolean windOp) {
+
 
         Set<String> keySet = o1.getSimilarityMap().keySet().stream().filter(i -> i.contains("_" + offset))
                 .collect(Collectors.toSet());
@@ -188,22 +208,44 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
         Map<String, List<Double>> trendMap = new HashMap<>();
 
+        Map<String,String> similarityWindMap = new HashMap<>();
+
+        Map<String,List<String>> trendWindMap = new HashMap<>();
+
         for (String key : keySet) {
             double sum = o1.getSimilarityMap().get(key) + o2.getSimilarityMap().get(key);
             similarityMap.put(key, sum);
-
+            if (windOp) {
+                Map<String, String> o1SimilarityWindMap = o1.getSimilarityWindMap();
+                if (o1SimilarityWindMap != null && o1SimilarityWindMap.get(key) != null) {
+                    similarityWindMap.put(key, Joiner.on("_").join(o1SimilarityWindMap.get(key), o2.getSimilarityMap().get(key)));
+                }
+            }else {
+                similarityWindMap.put(key, Joiner.on("_").join(o1.getSimilarityMap().get(key), o2.getSimilarityMap().get(key)));
+            }
             List<Double> o1IndexList = o1.getTrendMap().get(key);
             List<Double> o2IndexList = o2.getTrendMap().get(key);
 
             int length = o1IndexList.size();
             List<Double> trendMapMList = new ArrayList<>();
+            List<String> trendMapWindMList = new ArrayList<>();
             for (int i = 0; i < length; i++) {
                 trendMapMList.add(o1IndexList.get(i)+o2IndexList.get(i));
+               if (windOp) {
+                   Map<String, List<String>> o1TrendWindMap = o1.getTrendWindMap();
+                   if (o1TrendWindMap != null && o1TrendWindMap.get(key) != null && o1TrendWindMap.get(key).size() > i) {
+                       trendMapWindMList.add(Joiner.on("_").join(o1TrendWindMap.get(key).get(i), o2IndexList.get(i)));
+                   }
+               }else {
+                   trendMapWindMList.add(Joiner.on("_").join(o1IndexList.get(i),o2IndexList.get(i)));
+               }
             }
-
             trendMap.put(key, trendMapMList);
+            trendWindMap.put(key,trendMapWindMList);
         }
-        return SimilarityRes.builder().stock(o1.getStock()).trendMap(trendMap).similarityMap(similarityMap).build();
+        return SimilarityRes.builder().stock(o1.getStock()).trendMap(trendMap).similarityMap(similarityMap)
+                .trendWindMap(trendWindMap)
+                .similarityWindMap(similarityWindMap).build();
     }
 
     /**

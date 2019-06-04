@@ -119,7 +119,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
                 String preHash = code_hash_map.put(code, time_stamp_hash);
 
-                if (!time_stamp_hash.equals(preHash)) {
+                if (time_stamp_hash.equals(preHash)) {
 
                     FsData preData = preFsDataMap.put(code, curData);
 
