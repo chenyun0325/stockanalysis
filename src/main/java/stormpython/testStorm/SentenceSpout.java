@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import org.apache.storm.spout.ShellSpout;
 import org.apache.storm.topology.IRichSpout;

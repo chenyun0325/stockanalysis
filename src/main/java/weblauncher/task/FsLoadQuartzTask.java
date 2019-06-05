@@ -4,7 +4,6 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
 import fsanalysis.DateUtil;
 import sharejdbc.IfsdataDao;
-import stormpython.TaskHasThread;
 
 import java.io.File;
 import java.net.URL;

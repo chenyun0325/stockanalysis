@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import org.apache.storm.task.ShellBolt;
 import org.apache.storm.topology.IRichBolt;

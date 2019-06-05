@@ -4,6 +4,7 @@ import fsrealanalysis.FsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sharejdbc.IfsPkDataDao;
+import weblauncher.task.INode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +16,7 @@ public class FsPkDataBootStrapSpring implements Runnable, INode {
  private static final Logger errorLog = LoggerFactory.getLogger(FsPkDataBootStrapSpring.class);
 
   //必须 static ?
-  private  FsPKQuene<FsData> fspkQuene;//数据来源
+  private FsPKQuene<FsData> fspkQuene;//数据来源
 
   private static Thread dataInputThread;
 
@@ -74,7 +75,6 @@ public class FsPkDataBootStrapSpring implements Runnable, INode {
   @Override
   public void startNode() {
     fspkQuene = FsPKQuene.getInstance();
-    System.out.println("______xx____"+fspkQuene);
     //新建task
     dataInputThread = new Thread(this,"data_db_inputThread_0");
     dataInputThread.start();

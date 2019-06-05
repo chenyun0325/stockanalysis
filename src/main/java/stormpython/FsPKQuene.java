@@ -1,6 +1,5 @@
 package stormpython;
 
-import net.sf.json.JSONObject;
 
 import java.io.Serializable;
 import java.util.concurrent.BlockingQueue;
@@ -32,8 +31,6 @@ public class FsPKQuene<T> implements Serializable{
   }
 
   public void put(T item){
-    System.err.println(JSONObject.fromObject(item).toString());
-    System.out.println("xxxxxxxxxxxxxxxxxx_yyyyyyyyyy");
     quene.add(item);
   }
   public BlockingQueue<T> getQuene(){

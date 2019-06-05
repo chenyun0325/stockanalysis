@@ -1,4 +1,4 @@
-package stormpython;
+package weblauncher.task;
 
 import fsanalysis.FsModel;
 import org.slf4j.Logger;
@@ -10,7 +10,7 @@ import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-import static stormpython.FsPythonShellLoad.jsonToBean;
+import static stormpython.testStorm.FsPythonShellLoad.jsonToBean;
 
 /**
  * Created by cy111966 on 2017/1/24.

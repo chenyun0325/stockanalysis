@@ -14,7 +14,7 @@ import java.security.ProtectionDomain;
 import java.util.ArrayList;
 import java.util.List;
 
-import static stormpython.FsPythonShellLoad.jsonToBean;
+import static stormpython.testStorm.FsPythonShellLoad.jsonToBean;
 
 /**
  * Created by cy111966 on 2017/1/23.

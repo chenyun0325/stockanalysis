@@ -25,13 +25,13 @@ public class StockStormController {
   LocalCluster cluster = new LocalCluster();
 
   /**
-   * localhost/ct2/start.do?topology=test&filter_mount=1000000&filter_per=100&slide_size=20&max_size=100&wind_size=10&price_dif_var=0.005&amount=1000000&price_dif_var1=0.001&amount1=1500000
+   * localhost/ct2/start.do?topology=testStorm&filter_mount=1000000&filter_per=100&slide_size=20&max_size=100&wind_size=10&price_dif_var=0.005&amount=1000000&price_dif_var1=0.001&amount1=1500000
    */
   @RequestMapping("/start.do")
   public void stormStart(StockStormQuery query, HttpServletResponse res) {
     try {
       TopologyBuilder builder = new TopologyBuilder();
-      JdTdSlidingWindowBolt bolt = new JdTdSlidingWindowBolt(query.getFilter_mount(), query.getFilter_per(), query.getSlide_size());
+      YdTdSlidingWindowBolt bolt = new YdTdSlidingWindowBolt(query.getFilter_mount(), query.getFilter_per(), query.getSlide_size());
       BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
       builder.setSpout("FsRealSpout", new StockbatchSpout(Constant.stock_all, "4"), 1);
       splitBolt.fieldsGrouping("FsRealSpout", new Fields("code"));

@@ -35,7 +35,7 @@ import static datacrawler.Constant.stock_index_code;
  * 定时发射数据
  * http://www.2cto.com/net/201605/512041.html
  */
-public class JdTdSlidingWindowBolt extends BaseBasicBolt {
+public class YdTdSlidingWindowBolt extends BaseBasicBolt {
 
   static Logger log_error = LoggerFactory.getLogger("errorfile");
 
@@ -72,7 +72,7 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
   //必须static ? 因为 blot可以分发到不同jvm吗？？
   private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
  // private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
-  public JdTdSlidingWindowBolt(double filter_mount, double filter_per, int slide_size) {
+  public YdTdSlidingWindowBolt(double filter_mount, double filter_per, int slide_size) {
     this.filter_mount = filter_mount;
     this.filter_per = filter_per;
     this.slide_size = slide_size;
@@ -230,15 +230,7 @@ public class JdTdSlidingWindowBolt extends BaseBasicBolt {
     return map;
   }
 
-  //    public static void printRes(String resPrint, BufferedWriter write) {
-//        try {
-//            write.write(resPrint);
-//            write.newLine();
-//        } catch (IOException e) {
-//            log_error.error("append error context:{}", resPrint);
-//        }
-//
-//    }
+
   public void printRes(String fileName, Map<String, List<FsIndexRes>> maps) {
     FileWriter fw = null;
     BufferedWriter bfw = null;

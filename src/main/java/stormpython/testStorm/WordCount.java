@@ -1,5 +1,6 @@
-package stormpython;
+package stormpython.testStorm;
 
+import com.google.common.base.Joiner;
 import datacrawler.Constant;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -7,10 +8,14 @@ import org.apache.storm.generated.AuthorizationException;
 import org.apache.storm.topology.BoltDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import stormpython.JDSlidingWindowBolt;
+import stormpython.YdTdSlidingWindowBolt;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // The topology
-public class StockStorm {
+public class WordCount {
 
   public static void main(String[] args) throws AuthorizationException {
     String filter_mount=args[0];
@@ -23,17 +28,34 @@ public class StockStorm {
     String price_dif_var1=args[7];
     String amount1=args[8];
 
-    //启动异步数据存储线程
-    ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
-    ctx.start();
     TopologyBuilder builder = new TopologyBuilder();
-    JdTdSlidingWindowBolt bolt = new JdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
+    String[] codes = Constant.stock_all.split(",");
+    int batchsize = 800;
+    int total = codes.length;
+    int batch = total / batchsize;
+    //int mod = total%batchsize;
+    YdTdSlidingWindowBolt bolt = new YdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
-    builder.setSpout("FsRealSpout" , new StockbatchSpout(Constant.stock_all,"4"), 1);
-    // Split bolt splits sentences and emits words
-    splitBolt.fieldsGrouping("FsRealSpout" , new Fields("code"));
+    for (int i = 0; i <= batch; i++) {
+      int start = i * batchsize;
+      int end = (i + 1) * batchsize;
+      if (end > total) {
+        end = total;
+      }
+      List<String> codeslist = new ArrayList<String>();
+      for (int j = start; j < end; j++) {
+        codeslist.add(codes[j]);
+      }
+      String codeListStr = Joiner.on(",").join(codeslist);
+      // Spout emits random sentences
+      builder.setSpout("FsRealSpout" + i, new SentenceSpout(codeListStr), 1);
+      // Split bolt splits sentences and emits words
+      splitBolt.fieldsGrouping("FsRealSpout" + i, new Fields("code"));
+      codeslist.clear();
+    }
     builder.setBolt("slidBolt", new JDSlidingWindowBolt(Integer.valueOf(max_siz), Integer.valueOf(wind_size), Double.valueOf(price_dif_var), Double.valueOf(amount),Double.valueOf(price_dif_var1), Double.valueOf(amount1)), 2)
-        .fieldsGrouping("SplitBolt", new Fields("code"));
+        .fieldsGrouping("SplitBolt", new Fields
+            ("code"));
 
     // Counter consumes words and emits words and counts
     // FieldsGrouping is used so the same words get routed
@@ -48,7 +70,6 @@ public class StockStorm {
 
     LocalCluster cluster = new LocalCluster();
     cluster.submitTopology("test", conf, builder.createTopology());
-
 //    // If there are arguments, we must be on a cluster
 //    if (args != null && args.length > 0) {
 //      conf.setNumWorkers(3);
@@ -62,7 +83,7 @@ public class StockStorm {
 //    } else {
 //      // Otherwise, we are running locally
 //      LocalCluster cluster = new LocalCluster();
-//      cluster.submitTopology("test", conf, builder.createTopology());
+//      cluster.submitTopology("testStorm", conf, builder.createTopology());
 //    }
   }
 }

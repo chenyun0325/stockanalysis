@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import fsanalysis.FsModel;
 import net.sf.json.JSONObject;

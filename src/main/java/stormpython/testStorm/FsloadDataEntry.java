@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;

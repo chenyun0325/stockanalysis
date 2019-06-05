@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import fsrealanalysis.FsData;
 import fsrealanalysis.FsIndexRes;

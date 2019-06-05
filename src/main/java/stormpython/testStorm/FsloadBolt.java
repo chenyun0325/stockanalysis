@@ -1,4 +1,4 @@
-package stormpython;
+package stormpython.testStorm;
 
 import org.apache.storm.topology.BasicOutputCollector;
 import org.apache.storm.topology.OutputFieldsDeclarer;
