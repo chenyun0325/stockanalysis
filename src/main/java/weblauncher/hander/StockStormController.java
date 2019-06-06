@@ -33,31 +33,27 @@ public class StockStormController {
   public void stormStart(StockStormQuery query, HttpServletResponse res) {
     try {
       TopologyBuilder builder = new TopologyBuilder();
-      RuleConfig ruleConfig = RuleConfig.builder().mount(query.getAmount()).price_var(query.getPrice_dif_var())
-              .filter_mount(query.getFilter_mount()).filter_per(query.getFilter_per()).minCalcCount(query.getSlide_size()).build();
-      RuleConfig ruleConfig1 = RuleConfig.builder().mount(query.getAmount1()).price_var(query.getPrice_dif_var1())
-              .filter_mount(query.getFilter_mount()).filter_per(query.getFilter_per()).minCalcCount(query.getSlide_size()).build();
+      RuleConfig ruleConfig = RuleConfig.builder()
+              .mount(query.getAmount()).price_var(query.getPrice_dif_var())
+              .filter_mount(query.getFilter_mount())
+              .filter_per(query.getFilter_per())
+              .minCalcCount(query.getSlide_size()).offset(0).build();
+      RuleConfig ruleConfig1 = RuleConfig.builder()
+              .mount(query.getAmount1()).price_var(query.getPrice_dif_var1())
+              .filter_mount(query.getFilter_mount())
+              .filter_per(query.getFilter_per())
+              .minCalcCount(query.getSlide_size()).offset(5).build();
 
       YdTdJdWindowBolt ydTdJdWindowBolt = new YdTdJdWindowBolt(Lists.newArrayList(ruleConfig,ruleConfig1), query.getMax_size());
 
       BoltDeclarer ytjCalcBolt = builder.setBolt("ytjCalcBolt", ydTdJdWindowBolt, 4);
       builder.setSpout("FsRealSpout", new StockbatchSpout(Constant.stock_all, "4"), 1);
       ytjCalcBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
-//      builder.setBolt("slidBolt", new JDSlidingWindowBolt(query.getMax_size(), query.getWind_size(),
-//              query.getPrice_dif_var(), query.getAmount(),
-//              query.getPrice_dif_var1(),
-//              query.getAmount1()), 2)
-//          .fieldsGrouping("SplitBolt", new Fields("code"));
-//      builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
 
       String[] stockIndexArray = Constant.stock_index_code.split(",");
       List<String> stockIndexList = Arrays.asList(stockIndexArray);
-      //builder.setBolt("diffBlot",new DiffBolt(),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
-
-      //builder.setBolt("",new SimilarityTrendFlagCountSWBolt(10,3,5)).globalGrouping("");
 
       builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(10,2,5,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
-
       builder.setBolt("rankBolt",new GlobalRankBolt(10,2,5,30,15)).globalGrouping("similarityBolt");
 
       Config conf = new Config();

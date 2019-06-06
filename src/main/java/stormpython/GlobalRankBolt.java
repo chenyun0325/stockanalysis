@@ -11,6 +11,7 @@ import org.apache.storm.topology.base.BaseBasicBolt;
 import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stormpython.rule.WarnRuleConfig;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -33,12 +34,13 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
     static Logger log_error = LoggerFactory.getLogger("errorfile");
 
-    private String rk_sim_file_thead = "/Users/chenyun/stockData/holders/rank/rank_sim_thead";
-    private String rk_sim_sum_file_thead = "/Users/chenyun/stockData/holders/rank/rank_sim_sum_thead";
+    private String rk_sim_file_thread = "/Users/chenyun/stockData/holders/rank/rank_sim_thread";
 
-    private String rk_trend_file_thead = "/Users/chenyun/stockData/holders/rank/rank_trend_thead";
+    private String rk_sim_sum_file_thread = "/Users/chenyun/stockData/holders/rank/rank_sim_sum_thread";
 
-    private String rk_trend_sum_file_thead = "/Users/chenyun/stockData/holders/rank/rank_trend_sum_thead";
+    private String rk_trend_file_thread = "/Users/chenyun/stockData/holders/rank/rank_trend_thread";
+
+    private String rk_trend_sum_file_thread = "/Users/chenyun/stockData/holders/rank/rank_trend_sum_thread";
     /**
      * 指数白名单列表
      */
@@ -99,6 +101,59 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
     private int errorCount = 100;
 
+    /**
+     * 指标项个数
+     */
+    private int indexCount;
+
+
+    private List<WarnRuleConfig> warnRuleConfigs = new ArrayList<>();
+
+    public GlobalRankBolt(int windowSize, int emitFrequencyInSeconds,int topN,int indexCount, List<WarnRuleConfig> warnRuleConfigs) {
+        this.windowSize = windowSize;
+        this.emitFrequencyInSeconds = emitFrequencyInSeconds;
+        this.warnRuleConfigs = warnRuleConfigs;
+        this.topN = topN;
+        this.indexCount = indexCount;
+
+        /**
+         * 数据输出线程
+         */
+        new Thread("rank_multi_data_out") {
+            @Override
+            public void run() {
+
+                List<Integer> offsets = warnRuleConfigs.stream().map(i -> i.getOffset()).collect(Collectors.toList());
+
+                while (true) {
+                    try {
+
+                        Thread.sleep(emitFrequencyInSeconds * 1000);
+
+                        if (lastSimilarityMap.size() >= Constant.stockSize-errorCount) {
+                            rankMultiOutPutFile(lastSimilarityMap,indexList,offsets,indexCount,topN,rk_sim_file_thread,true,true);
+                            rankMultiOutPutFile(lastSimilarityMap,indexList,offsets,indexCount,topN,rk_sim_file_thread,true,false);
+                            rankMultiOutPutFile(lastSimilarityMap,indexList,offsets,indexCount,topN,rk_trend_file_thread,false,true);
+                            rankMultiOutPutFile(lastSimilarityMap,indexList,offsets,indexCount,topN,rk_trend_file_thread,false,false);
+                        }
+                        if (sumSimilarityMap.size() >= 2*(Constant.stockSize-errorCount)) {
+                            rankMultiOutPutFile(sumSimilarityMap,indexList,offsets,indexCount,topN,rk_sim_sum_file_thread,true,true);
+                            rankMultiOutPutFile(sumSimilarityMap,indexList,offsets,indexCount,topN,rk_sim_sum_file_thread,true,false);
+                            rankMultiOutPutFile(sumSimilarityMap,indexList,offsets,indexCount,topN,rk_trend_sum_file_thread,false,true);
+                            rankMultiOutPutFile(sumSimilarityMap,indexList,offsets,indexCount,topN,rk_trend_sum_file_thread,false,false);
+                        }
+
+                    } catch (Exception e) {
+                        log_error.error("data_out error:", e);
+                        e.printStackTrace();
+                        continue;
+                    }
+                }
+            }
+        }.start();
+
+    }
+
     public GlobalRankBolt(int windowSize, int offset1, int offset2, int topN, int frequencyInSeconds) {
         this.windowSize = windowSize;
         this.offset1 = offset1;
@@ -117,12 +172,12 @@ public class GlobalRankBolt extends BaseBasicBolt {
                         Thread.sleep(emitFrequencyInSeconds * 1000);
 
                         if (lastSimilarityMap.size() >= Constant.stockSize-errorCount) {
-                            rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_sim_file_thead,true);
-                            rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_trend_file_thead,false);
+                            rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_sim_file_thread,true);
+                            rankOutPutFile(lastSimilarityMap, indexList, offset1, offset2, topN, rk_trend_file_thread,false);
                         }
                         if (sumSimilarityMap.size() >= 2*(Constant.stockSize-errorCount)) {
-                            rankOutPutFile(sumSimilarityMap, indexList, offset1, offset2, topN, rk_sim_sum_file_thead,true);
-                            rankOutPutFile(sumSimilarityMap, indexList, offset1, offset2, topN, rk_trend_sum_file_thead,false);
+                            rankOutPutFile(sumSimilarityMap, indexList, offset1, offset2, topN, rk_sim_sum_file_thread,true);
+                            rankOutPutFile(sumSimilarityMap, indexList, offset1, offset2, topN, rk_trend_sum_file_thread,false);
                         }
 
                     } catch (Exception e) {
@@ -141,6 +196,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
 
         try {
+
             String code = input.getString(0);
             Object item = input.getValue(1);
             JSONObject item_json = JSONObject.fromObject(item);
@@ -153,17 +209,17 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
 
             SimilarityRes similarityOffset;
+
             /**
              * 累计计算
              */
-            if (count % windowSize == offset1) {
-                similarityOffset = similarityResWindow.get(offset1 - 1);
-                String key1 = Joiner.on("_").join(code, offset1);
-                calcSumAndWindSum(similarityRes, count, similarityOffset, key1,windowSize,sumSimilarityMap,sumSimilarityWindMap,offset1);
-            } else if (count % windowSize == offset2) {
-                similarityOffset = similarityResWindow.get(offset2 - 1);
-                String key2 = Joiner.on("_").join(code, offset2);
-                calcSumAndWindSum(similarityRes, count, similarityOffset, key2,windowSize,sumSimilarityMap,sumSimilarityWindMap,offset2);
+            for (WarnRuleConfig warnRuleConfig : warnRuleConfigs) {
+                int offset = warnRuleConfig.getOffset();
+                if (count % windowSize == offset) {
+                    similarityOffset = similarityResWindow.get(offset - 1);
+                    String key1 = Joiner.on("_").join(code, offset);
+                    calcSumAndWindSum(similarityRes, count, similarityOffset, key1,windowSize,sumSimilarityMap,sumSimilarityWindMap,offset);
+                }
             }
 
 
@@ -351,11 +407,11 @@ public class GlobalRankBolt extends BaseBasicBolt {
      * @param offset1
      * @param offset2
      * @param topN
-     * @param rk_file_thead
+     * @param rk_file_thread
      * @param isSimSort
      */
     public void rankOutPutFile(Map<String, SimilarityRes> map, List<String> indexList, int offset1, int offset2,
-                               int topN, String rk_file_thead,boolean isSimSort) {
+                               int topN, String rk_file_thread, boolean isSimSort) {
         Map<String, List<Map.Entry<String, SimilarityRes>>> resList = new HashMap<>();
         String dateStr = DateUtil.convert2dateStr(new Date());
         for (String index : indexList) {
@@ -378,14 +434,14 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 resList.put(keyOffset1Descending, keyOffset1ListDescending);
                 resList.put(keyOffset2Asceding, keyOffset2ListAscending);
                 resList.put(keyOffset2Descending, keyOffset2ListDescending);
-                String file1 = rk_file_thead + "_" + keyOffset1Asceding + "_" + dateStr + ".txt";
-                printResThead(file1, keyOffset1ListAscending, false);
-                file1 = rk_file_thead + "_" + keyOffset1Descending + "_" + dateStr + ".txt";
-                printResThead(file1, keyOffset1ListDescending, false);
-                file1 = rk_file_thead + "_" + keyOffset2Asceding + "_" + dateStr + ".txt";
-                printResThead(file1, keyOffset2ListAscending, false);
-                file1 = rk_file_thead + "_" + keyOffset2Descending + "_" + dateStr + ".txt";
-                printResThead(file1, keyOffset2ListDescending, false);
+                String file1 = rk_file_thread + "_" + keyOffset1Asceding + "_" + dateStr + ".txt";
+                printResThread(file1, keyOffset1ListAscending, false);
+                file1 = rk_file_thread + "_" + keyOffset1Descending + "_" + dateStr + ".txt";
+                printResThread(file1, keyOffset1ListDescending, false);
+                file1 = rk_file_thread + "_" + keyOffset2Asceding + "_" + dateStr + ".txt";
+                printResThread(file1, keyOffset2ListAscending, false);
+                file1 = rk_file_thread + "_" + keyOffset2Descending + "_" + dateStr + ".txt";
+                printResThread(file1, keyOffset2ListDescending, false);
             }else {
                 /**
                  * 趋势符号在List位置
@@ -393,22 +449,23 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 for (int i =0;i<=3;i++){
 
                     List<Map.Entry<String, SimilarityRes>> keyOffset1ListAscending=sortTrendCountTopN(map,keyOffset1,i,topN,true);
+
                     Object[] joinArrayA = {i,true,dateStr,".txt"};
                     Object[] joinArrayD = {i,false,dateStr,".txt"};
 
-                    printResThead(Joiner.on("_").join(rk_file_thead,keyOffset1, joinArrayA),keyOffset1ListAscending,false);
+                    printResThread(Joiner.on("_").join(rk_file_thread,keyOffset1, joinArrayA),keyOffset1ListAscending,false);
 
                     List<Map.Entry<String, SimilarityRes>> keyOffset1ListDescending = sortTrendCountTopN(map,keyOffset1,i,topN,false);
 
-                    printResThead(Joiner.on("_").join(rk_file_thead,keyOffset1, joinArrayD),keyOffset1ListDescending,false);
+                    printResThread(Joiner.on("_").join(rk_file_thread,keyOffset1, joinArrayD),keyOffset1ListDescending,false);
 
                     List<Map.Entry<String, SimilarityRes>> keyOffset2ListAscending = sortTrendCountTopN(map,keyOffset2,i,topN,true);
 
-                    printResThead(Joiner.on("_").join(rk_file_thead,keyOffset2, joinArrayA),keyOffset2ListAscending,false);
+                    printResThread(Joiner.on("_").join(rk_file_thread,keyOffset2, joinArrayA),keyOffset2ListAscending,false);
 
                     List<Map.Entry<String, SimilarityRes>> keyOffset2ListDescending =sortTrendCountTopN(map,keyOffset2,i,topN,false);
 
-                    printResThead(Joiner.on("_").join(rk_file_thead,keyOffset2, joinArrayD),keyOffset2ListDescending,false);
+                    printResThread(Joiner.on("_").join(rk_file_thread,keyOffset2, joinArrayD),keyOffset2ListDescending,false);
 
                 }
             }
@@ -416,7 +473,54 @@ public class GlobalRankBolt extends BaseBasicBolt {
         }
     }
 
-    public void printResThead(String fileName, List<Map.Entry<String, SimilarityRes>> topNRes, boolean appendFlag) {
+
+    /**
+     * 多指标排序结果输出到文件
+     * @param map
+     * @param indexList
+     * @param keyOffsets
+     * @param indexCount
+     * @param topN
+     * @param rk_file_thread
+     * @param isSimSort
+     * @param ascending
+     */
+    public void rankMultiOutPutFile(Map<String, SimilarityRes> map, List<String> indexList, List<Integer> keyOffsets, int indexCount,
+                               int topN, String rk_file_thread, boolean isSimSort,boolean ascending) {
+
+        String dateStr = DateUtil.convert2dateStr(new Date());
+        for (String index : indexList) {
+
+            for (Integer offset : keyOffsets) {
+
+                String keyOffset = Joiner.on("_").join(index, offset);
+
+                if (isSimSort){
+                    List<Map.Entry<String, SimilarityRes>> sortSimilarityTopN =
+                            sortSimilarityTopN(map, keyOffset, topN, ascending);
+                    String keyOffsetAscending = Joiner.on("_").join(keyOffset, ascending);
+                    String fileName = rk_file_thread + "_" + keyOffsetAscending + "_" + dateStr + ".txt";
+                   printResThread(fileName,sortSimilarityTopN,false);
+
+                }else{
+                    /**
+                     * 趋势符号在List位置
+                     */
+                    for (int i =0;i<=indexCount;i++){
+
+                        List<Map.Entry<String, SimilarityRes>> sortTrendCountTopN=sortTrendCountTopN(map,keyOffset,i,topN,ascending);
+
+                        Object[] joinArray = {i,ascending,dateStr,".txt"};
+
+                        printResThread(Joiner.on("_").join(rk_file_thread,keyOffset, joinArray),sortTrendCountTopN,false);
+
+                    }
+                }
+            }
+        }
+    }
+
+    public void printResThread(String fileName, List<Map.Entry<String, SimilarityRes>> topNRes, boolean appendFlag) {
         FileWriter fw = null;
         BufferedWriter bfw = null;
         try {

@@ -33,5 +33,8 @@ public class RuleConfig implements Serializable {
     private int offset;
 
 
+    /**
+     * 某stock累计最少数据量
+     */
     private int minCalcCount;
 }

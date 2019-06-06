@@ -20,6 +20,7 @@ import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import stormpython.rule.RuleConfig;
+import stormpython.rule.RuleConfigConstant;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -93,6 +94,7 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
             public void run() {
                 code_map_multi.clear();
                 jd_map_multi.clear();
+                ruleStockSetMap.clear();
             }
         };
 
@@ -170,9 +172,9 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
                      */
                     if (!indexRes.isTpFlag() && !indexRes.isZdtFlag()) {
                         if (price_dif > 0) {
-                          ruleStockData(ruleStockSetMap,"zt",code);
+                          ruleStockData(ruleStockSetMap, RuleConfigConstant.ztRuleKey,code);
                         } else {
-                          ruleStockData(ruleStockSetMap,"dt",code);
+                          ruleStockData(ruleStockSetMap,RuleConfigConstant.dtRuleKey,code);
                         }
                     } else {
                         /**

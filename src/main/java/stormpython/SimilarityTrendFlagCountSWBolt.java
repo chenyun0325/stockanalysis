@@ -1,6 +1,7 @@
 package stormpython;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
 import datacrawler.Constant;
 import fsrealanalysis.FsData;
 import fsrealanalysis.SimilarityRes;
@@ -15,6 +16,8 @@ import org.apache.storm.tuple.Tuple;
 import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import stormpython.rule.RuleConfigConstant;
+import stormpython.rule.WarnRuleConfig;
 import stormpython.util.TupleHelpers;
 
 import java.util.*;
@@ -54,11 +57,6 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
     private int offset2;
 
 
-    /**
-     * 预警水位
-     */
-    private double priceWarnLevel;
-
 
     /**
      * 指数白名单列表
@@ -77,10 +75,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
      */
     private Map<String, SynchronizedDescriptiveStatistics> stock_volume_window_map = new ConcurrentHashMap<>();
 
-    /**
-     * 量比例
-     */
-    private int volumeLevel;
+
 
     /**
      * 时间窗口数据频次
@@ -88,8 +83,22 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
     private int emitFrequencyInSeconds = 10;
 
 
-    private Map<String,String> code_hash_map = new ConcurrentHashMap<>();//存储上一个股票的分时hash,防止同一个数据进入多次
+    private Map<String, String> code_hash_map = new ConcurrentHashMap<>();// 存储上一个股票的分时hash,防止同一个数据进入多次
 
+
+    private List<WarnRuleConfig> warnRuleConfigs = new ArrayList<>();
+
+    /**
+     * key:业务规则,value:股票集合
+     */
+    static Map<String, Set<String>> ruleStockSetMap = new HashMap<>();
+
+    public SimilarityTrendFlagCountSWBolt(List<WarnRuleConfig> warnRuleConfigs, int windowSize,
+            int emitFrequencyInSeconds) {
+        this.warnRuleConfigs = warnRuleConfigs;
+        this.windowSize = windowSize;
+        this.emitFrequencyInSeconds = emitFrequencyInSeconds;
+    }
 
     public SimilarityTrendFlagCountSWBolt(int windowSize, int offset1, int offset2, int frequencyInSeconds) {
         this.windowSize = windowSize;
@@ -115,7 +124,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                 /**
                  * 数据去重
                  */
-                String time_stamp_hash = curData.getDate()+" "+curData.getTime();
+                String time_stamp_hash = curData.getDate() + " " + curData.getTime();
 
                 String preHash = code_hash_map.put(code, time_stamp_hash);
 
@@ -186,35 +195,6 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                                 long priceIndexDiffCount = stockPriceIndexDiffWindow.getN();
 
 
-                                /**
-                                 * N分钟价格差异累计涨幅(剔除指数) > rule_diff
-                                 */
-                                if (priceIndexDiffCount > offset1) {
-                                    double offset1Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
-                                            stockPriceIndexDiffWindow.getValues(), offset1,
-                                            (int) (priceIndexDiffCount - offset1));
-                                }
-
-                                if (priceIndexDiffCount > offset2) {
-                                    double offset2Sum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
-                                            stockPriceIndexDiffWindow.getValues(), offset2,
-                                            (int) (priceIndexDiffCount - offset2));
-                                }
-
-
-                                /**
-                                 * N分钟价格差异累计涨幅 > rule
-                                 */
-                                if (dataCount > offset1) {
-                                    double offset1Sum = stockPriPreDiffWindow.getSumImpl().evaluate(
-                                            stockPriPreDiffWindow.getValues(), offset1, (int) (dataCount - offset1));
-                                }
-
-                                if (dataCount > offset2) {
-                                    double offset2Sum = stockPriPreDiffWindow.getSumImpl().evaluate(
-                                            stockPriPreDiffWindow.getValues(), offset2, (int) (dataCount - offset2));
-                                }
-
 
                                 /**
                                  * 计算相似度(不剔除指数影响)
@@ -223,26 +203,65 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                                         getPreWindow(stock_window_map, indexKey, windowSize);
 
 
-                                calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset1,
-                                        indexKey);
-
-                                calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow, offset2,
-                                        indexKey);
-
-
                                 /**
                                  * 趋势符号(不剔除指数影响)
                                  */
                                 SynchronizedDescriptiveStatistics indexVolumeWindow =
                                         getPreWindow(stock_volume_window_map, indexKey, windowSize);
 
+                                for (WarnRuleConfig warnRuleConfig : warnRuleConfigs) {
 
-                                calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
-                                        indexPriPreDiffWindow, offset1, indexKey);
+                                    int offset = warnRuleConfig.getOffset();
 
-                                calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow, stockPriPreDiffWindow,
-                                        indexPriPreDiffWindow, offset2, indexKey);
+                                    double priceWarnLevel = warnRuleConfig.getPriceWarnLevel();
 
+                                    /**
+                                     * N分钟价格差异累计涨幅(剔除指数) > rule_diff
+                                     */
+                                    if (priceIndexDiffCount > offset) {
+                                        double offsetSum = stockPriceIndexDiffWindow.getSumImpl().evaluate(
+                                                stockPriceIndexDiffWindow.getValues(), offset,
+                                                (int) (priceIndexDiffCount - offset));
+                                        if (offsetSum > priceWarnLevel && offsetSum > 0) {
+                                            String ruleKey = Joiner.on("_").join(RuleConfigConstant.priceIndexDiffUp+indexKey,
+                                                    offset, priceWarnLevel);
+                                            ruleStockData(ruleStockSetMap, ruleKey, code);
+                                        }
+                                        if (Math.abs(offsetSum) > priceWarnLevel && offsetSum < 0) {
+                                            String ruleKey = Joiner.on("_").join(RuleConfigConstant.priceIndexDiffDown+indexKey,
+                                                    offset, priceWarnLevel);
+                                            ruleStockData(ruleStockSetMap, ruleKey, code);
+                                        }
+                                    }
+
+                                    /**
+                                     * N分钟价格差异累计涨幅 > rule
+                                     */
+                                    if (dataCount > offset) {
+                                        double offsetSum = stockPriPreDiffWindow.getSumImpl().evaluate(
+                                                stockPriPreDiffWindow.getValues(), offset, (int) (dataCount - offset));
+
+                                        if (offsetSum > priceWarnLevel && offsetSum > 0) {
+                                            String ruleKey = Joiner.on("_").join(RuleConfigConstant.priceDiffUp+indexKey, offset,
+                                                    priceWarnLevel);
+
+                                            ruleStockData(ruleStockSetMap, ruleKey, code);
+                                        }
+                                        if (Math.abs(offsetSum) > priceWarnLevel && offsetSum < 0) {
+                                            String ruleKey = Joiner.on("_").join(RuleConfigConstant.priceDiffDown+indexKey,
+                                                    offset, priceWarnLevel);
+                                            ruleStockData(ruleStockSetMap, ruleKey, code);
+
+                                        }
+                                    }
+
+                                    calcSimilarityMap(similarityMap, stockPriPreDiffWindow, indexPriPreDiffWindow,
+                                            offset, indexKey);
+
+                                    calcTrendPvMap(trendMap, stockVolumeWindow, indexVolumeWindow,
+                                            stockPriPreDiffWindow, indexPriPreDiffWindow, offset, indexKey);
+
+                                }
                             }
 
                             /**
@@ -250,8 +269,8 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                              */
 
 
-                            SimilarityRes similarityRes = SimilarityRes.builder().stock(code).similarityMap(similarityMap)
-                                    .trendMap(trendMap).build();
+                            SimilarityRes similarityRes = SimilarityRes.builder().stock(code)
+                                    .similarityMap(similarityMap).trendMap(trendMap).build();
 
 
                             /**
@@ -263,21 +282,21 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
 
                     }
+                    /**
+                     * 当前涨跌幅(相对昨天closePrice)
+                     */
+                    double priceCloseDiff = (curData.getPrice() - curData.getPre_close()) / curData.getPre_close();
+
+                    String codeCloseKey = Joiner.on("_").join(code, "close");
+
+                    SynchronizedDescriptiveStatistics stockPriCloseDiffWindow =
+                            windowData(stock_window_map, codeCloseKey, priceCloseDiff, windowSize);
                 }
-                /**
-                 * 当前涨跌幅(相对昨天closePrice)
-                 */
-                double priceCloseDiff = (curData.getPrice() - curData.getPre_close()) / curData.getPre_close();
 
-                String codeCloseKey = Joiner.on("_").join(code, "close");
-
-                SynchronizedDescriptiveStatistics stockPriCloseDiffWindow =
-                        windowData(stock_window_map, codeCloseKey, priceCloseDiff, windowSize);
             }
 
 
 
-            // collector.emit(new Values(code));
         } catch (Exception e) {
             log_error.error("SimilarityTrendFlagCountSWBolt error", e);
             System.out.println(e);
@@ -298,6 +317,18 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
         return conf;
     }
 
+
+    public Map<String, Set<String>> ruleStockData(Map<String, Set<String>> ruleStockSetMap, String ruleKey,
+            String code) {
+
+        HashSet<String> stockSet = Sets.newHashSet();
+        Set<String> preStockSet = ruleStockSetMap.putIfAbsent(ruleKey, stockSet);
+        if (preStockSet == null) {
+            preStockSet = stockSet;
+        }
+        preStockSet.add(code);
+        return ruleStockSetMap;
+    }
 
     public SynchronizedDescriptiveStatistics windowData(Map<String, SynchronizedDescriptiveStatistics> map, String key,
             double data, int windowSize) {
@@ -484,8 +515,8 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                     if (stock[i] - index[i] > 0) {
                         if (vAvg != 0d) {
                             a3 = a3 + v / vAvg * (stock[i] - index[i]);
-                        }else {
-                            a3 = a3 +(stock[i] - index[i]);
+                        } else {
+                            a3 = a3 + (stock[i] - index[i]);
                         }
                     } else {
                         /**
@@ -493,14 +524,16 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                          */
                         if (vAvg != 0d) {
                             a4 = a4 + v / vAvg * (stock[i] - index[i]);
-                        }{
+                        }
+                        {
                             a4 = a4 + (stock[i] - index[i]);
                         }
                     }
 
                 }
             }
-            if (Double.isNaN(a1)||Double.isInfinite(a1)||Double.isNaN(a2)||Double.isInfinite(a2)||Double.isNaN(a3)||Double.isInfinite(a3)||Double.isNaN(a4)||Double.isInfinite(a4)){
+            if (Double.isNaN(a1) || Double.isInfinite(a1) || Double.isNaN(a2) || Double.isInfinite(a2)
+                    || Double.isNaN(a3) || Double.isInfinite(a3) || Double.isNaN(a4) || Double.isInfinite(a4)) {
                 System.out.println("NaN");
             }
             trendDiffCount.add(a1);
@@ -532,11 +565,11 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
              * TODO 拼接时间字符串_滚动窗口
              */
 
-            if (Double.isNaN(similarityCal)){
+            if (Double.isNaN(similarityCal)) {
                 System.out.println(similarityCal);
             }
 
-            if (Double.isInfinite(similarityCal)){
+            if (Double.isInfinite(similarityCal)) {
                 System.out.println(similarityCal);
             }
             String indexOffset = Joiner.on("_").join(indexKey, offset);

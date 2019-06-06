@@ -8,7 +8,6 @@ import org.apache.storm.generated.AuthorizationException;
 import org.apache.storm.topology.BoltDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
-import stormpython.JDSlidingWindowBolt;
 import stormpython.YdTdJdWindowBolt;
 
 import java.util.ArrayList;
