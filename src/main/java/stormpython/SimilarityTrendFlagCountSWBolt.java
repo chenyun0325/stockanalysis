@@ -231,7 +231,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
 
                                 /**
-                                 * TODO 趋势符号(不剔除指数影响)
+                                 * 趋势符号(不剔除指数影响)
                                  */
                                 SynchronizedDescriptiveStatistics indexVolumeWindow =
                                         getPreWindow(stock_volume_window_map, indexKey, windowSize);
@@ -244,6 +244,10 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                                         indexPriPreDiffWindow, offset2, indexKey);
 
                             }
+
+                            /**
+                             * 指数比对相关----------------结束
+                             */
 
 
                             SimilarityRes similarityRes = SimilarityRes.builder().stock(code).similarityMap(similarityMap)
@@ -289,7 +293,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
 
     @Override
     public Map<String, Object> getComponentConfiguration() {
-        Map<String, Object> conf = new HashMap<String, Object>();
+        Map<String, Object> conf = new HashMap<>();
         conf.put(Config.TOPOLOGY_TICK_TUPLE_FREQ_SECS, emitFrequencyInSeconds);
         return conf;
     }

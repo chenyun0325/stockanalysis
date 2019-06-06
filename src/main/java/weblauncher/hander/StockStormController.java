@@ -1,5 +1,6 @@
 package weblauncher.hander;
 
+import com.google.common.collect.Lists;
 import datacrawler.Constant;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
@@ -9,6 +10,7 @@ import org.apache.storm.tuple.Fields;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import stormpython.*;
+import stormpython.rule.RuleConfig;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -31,16 +33,22 @@ public class StockStormController {
   public void stormStart(StockStormQuery query, HttpServletResponse res) {
     try {
       TopologyBuilder builder = new TopologyBuilder();
-      YdTdSlidingWindowBolt bolt = new YdTdSlidingWindowBolt(query.getFilter_mount(), query.getFilter_per(), query.getSlide_size());
-      BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
+      RuleConfig ruleConfig = RuleConfig.builder().mount(query.getAmount()).price_var(query.getPrice_dif_var())
+              .filter_mount(query.getFilter_mount()).filter_per(query.getFilter_per()).minCalcCount(query.getSlide_size()).build();
+      RuleConfig ruleConfig1 = RuleConfig.builder().mount(query.getAmount1()).price_var(query.getPrice_dif_var1())
+              .filter_mount(query.getFilter_mount()).filter_per(query.getFilter_per()).minCalcCount(query.getSlide_size()).build();
+
+      YdTdJdWindowBolt ydTdJdWindowBolt = new YdTdJdWindowBolt(Lists.newArrayList(ruleConfig,ruleConfig1), query.getMax_size());
+
+      BoltDeclarer ytjCalcBolt = builder.setBolt("ytjCalcBolt", ydTdJdWindowBolt, 4);
       builder.setSpout("FsRealSpout", new StockbatchSpout(Constant.stock_all, "4"), 1);
-      splitBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
-      builder.setBolt("slidBolt", new JDSlidingWindowBolt(query.getMax_size(), query.getWind_size(),
-              query.getPrice_dif_var(), query.getAmount(),
-              query.getPrice_dif_var1(),
-              query.getAmount1()), 2)
-          .fieldsGrouping("SplitBolt", new Fields("code"));
-     // builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
+      ytjCalcBolt.fieldsGrouping("FsRealSpout", new Fields("code"));
+//      builder.setBolt("slidBolt", new JDSlidingWindowBolt(query.getMax_size(), query.getWind_size(),
+//              query.getPrice_dif_var(), query.getAmount(),
+//              query.getPrice_dif_var1(),
+//              query.getAmount1()), 2)
+//          .fieldsGrouping("SplitBolt", new Fields("code"));
+//      builder.setBolt("diffBlot",new DiffBolt()).fieldsGrouping("FsRealSpout","diff",new Fields("code"));
 
       String[] stockIndexArray = Constant.stock_index_code.split(",");
       List<String> stockIndexList = Arrays.asList(stockIndexArray);

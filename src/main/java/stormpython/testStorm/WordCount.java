@@ -9,7 +9,7 @@ import org.apache.storm.topology.BoltDeclarer;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 import stormpython.JDSlidingWindowBolt;
-import stormpython.YdTdSlidingWindowBolt;
+import stormpython.YdTdJdWindowBolt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class WordCount {
     int total = codes.length;
     int batch = total / batchsize;
     //int mod = total%batchsize;
-    YdTdSlidingWindowBolt bolt = new YdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
+    YdTdJdWindowBolt bolt = new YdTdJdWindowBolt(null, Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
     for (int i = 0; i <= batch; i++) {
       int start = i * batchsize;

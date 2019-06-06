@@ -66,7 +66,7 @@ public class Bolt1 extends BaseBasicBolt {
             }
 
             // TODO: 2016/12/3 下一个bolt进行时序数据分析
-            //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1??
+            //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1
             //处理时间序列数据----每新增n个数据分析一次
             Deque<FsIndexRes> fsDatas = code_wid_map.get(code);
             if (fsDatas != null) {

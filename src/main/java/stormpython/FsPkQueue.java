@@ -8,22 +8,22 @@ import java.util.concurrent.LinkedBlockingQueue;
 /**
  * Created by cy111966 on 2017/1/19.
  */
-public class FsPKQuene<T> implements Serializable{
+public class FsPkQueue<T> implements Serializable{
 
   private BlockingQueue<T> quene;
 
-  private static FsPKQuene instance;
+  private static FsPkQueue instance;
 
-  private FsPKQuene(){
+  private FsPkQueue(){
     if (quene == null) {
       quene = new LinkedBlockingQueue<>();
     }
   }
-  public static FsPKQuene getInstance(){
+  public static FsPkQueue getInstance(){
     if (instance == null) {
-      synchronized (FsPKQuene.class){
+      synchronized (FsPkQueue.class){
         if (instance == null) {
-          instance = new FsPKQuene();
+          instance = new FsPkQueue();
         }
       }
     }

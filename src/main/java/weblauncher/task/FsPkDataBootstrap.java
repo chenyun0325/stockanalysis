@@ -3,7 +3,7 @@ package weblauncher.task;
 import fsrealanalysis.FsData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import stormpython.FsPKQuene;
+import stormpython.FsPkQueue;
 
 /**
  * Created by cy111966 on 2017/1/19.
@@ -11,7 +11,7 @@ import stormpython.FsPKQuene;
 public class FsPkDataBootstrap implements Runnable, INode {
  private static final Logger errorLog = LoggerFactory.getLogger(FsPkDataBootstrap.class);
 
-  private static FsPKQuene<FsData> fspkQuene;//数据来源
+  private static FsPkQueue<FsData> fspkQuene;//数据来源
 
   private static volatile FsPkDataBootstrap instance;
 
@@ -57,7 +57,7 @@ public class FsPkDataBootstrap implements Runnable, INode {
 
   @Override
   public void startNode() {
-    fspkQuene = FsPKQuene.getInstance();
+    fspkQuene = FsPkQueue.getInstance();
     //新建task
     dataInputThread = new Thread(this,"data_db_inputThread_0");
     dataInputThread.start();

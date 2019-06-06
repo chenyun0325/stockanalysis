@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Created by cy111966 on 2016/12/3. 1.计算方差 2.滑动窗口算法 3.math common http://www.bubuko.com/infodetail-542704.html
  * http://commons.apache.org/proper/commons-math/apidocs/org/apache/commons/math4/stat/descriptive/DescriptiveStatistics.html
  */
-public class JDSlidingWindowBolt extends BaseBasicBolt {
+public class JDSlidingWindowBolt_back extends BaseBasicBolt {
 
   static Logger log_error = LoggerFactory.getLogger("errorfile");
   static Logger biz_log = LoggerFactory.getLogger("biz");
@@ -70,9 +70,9 @@ public class JDSlidingWindowBolt extends BaseBasicBolt {
             String dateStr = DateUtil.convert2dateStr(new Date());
             Thread.sleep(5000);
             String file1 = jd_file_thead + "_" + amount + "_" + dateStr + ".txt";
-            printResThread(file1, code_jd_map, false);
+            printResThead(file1, code_jd_map, false);
             String file2 = jd_file_thead + "_" + amount1 + "_" + dateStr + ".txt";
-            printResThread(file2, code_jd_map_1, false);
+            printResThead(file2, code_jd_map_1, false);
             //设置执行时间
             Calendar calendar = Calendar.getInstance();
             int year = calendar.get(Calendar.YEAR);
@@ -87,11 +87,11 @@ public class JDSlidingWindowBolt extends BaseBasicBolt {
               public void run() {
                 String dateStr = DateUtil.convert2dateStr(new Date());
                 String file1 = jd_his_file_thead + "_" + amount + "_" + dateStr + ".txt";
-                printResThread(file1, code_jd_his_map, true);
+                printResThead(file1, code_jd_his_map, true);
                 code_jd_his_map.clear();//保存之后清空数据
 
                 String file2 = jd_his_file_thead + "_" + amount1 + "_" + dateStr + ".txt";
-                printResThread(file2, code_jd_his_map_1, true);
+                printResThead(file2, code_jd_his_map_1, true);
                 code_jd_his_map_1.clear();//保存之后清空数据
               }
             };
@@ -107,8 +107,8 @@ public class JDSlidingWindowBolt extends BaseBasicBolt {
     }.start();
   }
 
-  public JDSlidingWindowBolt(int max_size, int wind_size, double price_dif_var, double amount,
-                             double price_dif_var1, double amount1) {
+  public JDSlidingWindowBolt_back(int max_size, int wind_size, double price_dif_var, double amount,
+                                  double price_dif_var1, double amount1) {
     this.max_size = max_size;
     this.wind_size = wind_size;
     this.price_dif_var = price_dif_var;
@@ -244,8 +244,8 @@ public class JDSlidingWindowBolt extends BaseBasicBolt {
     }
   }
 
-  public static void printResThread(String fileName, Map<String, List<SlidingWindowPriceRes>> maps,
-                                    boolean appendFlag) {
+  public static void printResThead(String fileName, Map<String, List<SlidingWindowPriceRes>> maps,
+                                   boolean appendFlag) {
     FileWriter fw = null;
     BufferedWriter bfw = null;
     try {

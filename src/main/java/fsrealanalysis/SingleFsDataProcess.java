@@ -13,6 +13,8 @@ public class SingleFsDataProcess implements FsDataProcess ,Serializable{
 
   StandardDeviation std = new StandardDeviation();
 
+  final double zdtPrice = 9.8d;
+
   public FsIndexRes process(FsData input) {
     String time_stamp = input.getDate()+" "+input.getTime();
     long time_stamp_long = DateUtil.convert2long(time_stamp, DateUtil.TIME_FORMAT);
@@ -70,7 +72,7 @@ public class SingleFsDataProcess implements FsDataProcess ,Serializable{
     FsIndexRes indexRes = new FsIndexRes();
     if (Double.isInfinite(kp_price_dif)||Double.isInfinite(yy_dif)){
       indexRes.setTpFlag(true);
-    }else if ((b_all_m==0d||a_all_m==0d||a1_m==0d || b1_m == 0d)&&Math.abs(price_dif)>9.8d){
+    }else if ((b_all_m==0d||a_all_m==0d||a1_m==0d || b1_m == 0d)&&Math.abs(price_dif)>zdtPrice){
       indexRes.setZdtFlag(true);
     }else {
       indexRes.setFsData(input);

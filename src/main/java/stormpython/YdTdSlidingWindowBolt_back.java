@@ -35,11 +35,11 @@ import static datacrawler.Constant.stock_index_code;
  * 定时发射数据
  * http://www.2cto.com/net/201605/512041.html
  */
-public class YdTdSlidingWindowBolt extends BaseBasicBolt {
+public class YdTdSlidingWindowBolt_back extends BaseBasicBolt {
 
   static Logger log_error = LoggerFactory.getLogger("errorfile");
 
-  Map<String, List<FsData>> code_map = new ConcurrentHashMap<String, List<FsData>>();//存储股票分时数据
+  Map<String, List<FsData>> code_map = new ConcurrentHashMap<>();//存储股票分时数据
 
   // todo 第一key：业务规则组合,第二key：股票代码
 
@@ -70,9 +70,9 @@ public class YdTdSlidingWindowBolt extends BaseBasicBolt {
 
   private List<String> indexList = Lists.newArrayList(stock_index_code.split(","));
   //必须static ? 因为 blot可以分发到不同jvm吗？？
-  private  static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
- // private static FsPKQuene fsPKQuene = FsPKQuene.getInstance();
-  public YdTdSlidingWindowBolt(double filter_mount, double filter_per, int slide_size) {
+  private  static FsPkQueue fsPKQuene = FsPkQueue.getInstance();
+ // private static FsPkQueue fsPKQuene = FsPkQueue.getInstance();
+  public YdTdSlidingWindowBolt_back(double filter_mount, double filter_per, int slide_size) {
     this.filter_mount = filter_mount;
     this.filter_per = filter_per;
     this.slide_size = slide_size;
@@ -142,7 +142,7 @@ public class YdTdSlidingWindowBolt extends BaseBasicBolt {
             stats_index = new SynchronizedDescriptiveStatistics(slide_size);
             stats_index.addValue(stamp);
             stats_map_index.put(code, stats_index);
-            stats.addValue(pricePer);
+            stats.addValue(price_dif);
             stats_map.put(code, stats);
             String hash = indexRes.getTime_stamp_long() + "_" + code;
             code_hash_map.put(code, hash);
@@ -150,7 +150,7 @@ public class YdTdSlidingWindowBolt extends BaseBasicBolt {
             String pre_hash = code_hash_map.get(code);
             String hash = indexRes.getTime_stamp_long() + "_" + code;
             if (!hash.equals(pre_hash)) {
-              stats.addValue(pricePer);
+              stats.addValue(price_dif);
               stats_index.addValue(stamp);
               code_hash_map.put(code, hash);
             }
@@ -174,7 +174,7 @@ public class YdTdSlidingWindowBolt extends BaseBasicBolt {
           }
 
           // TODO: 2016/12/3 下一个bolt进行时序数据分析
-          //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1?? FileWriter fw = null;
+          //夹单条件:a1_p>0.9&b1_p>0.9&jd_per=1;
 
 
           if (code != null) {

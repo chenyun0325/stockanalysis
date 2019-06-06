@@ -9,7 +9,7 @@ import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.tuple.Fields;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import stormpython.JDSlidingWindowBolt;
-import stormpython.YdTdSlidingWindowBolt;
+import stormpython.YdTdJdWindowBolt;
 import stormpython.StockbatchSpout;
 
 // The topology
@@ -30,7 +30,7 @@ public class StockStorm {
     ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("classpath:spring.xml");
     ctx.start();
     TopologyBuilder builder = new TopologyBuilder();
-    YdTdSlidingWindowBolt bolt = new YdTdSlidingWindowBolt(Double.valueOf(filter_mount), Double.valueOf(filter_per), Integer.valueOf(slide_size));
+    YdTdJdWindowBolt bolt = new YdTdJdWindowBolt(null, Integer.valueOf(slide_size));
     BoltDeclarer splitBolt = builder.setBolt("SplitBolt", bolt, 4);
     builder.setSpout("FsRealSpout" , new StockbatchSpout(Constant.stock_all,"4"), 1);
     // Split bolt splits sentences and emits words

@@ -15,35 +15,35 @@ public class PriceDiffCustomStreamGrouping extends PartialKeyGrouping implements
 
     private List<String> whiteList;
 
-    private Fields fieldsx = null;
-    private Fields outFieldsx = null;
-    private List<Integer> targetTasksx;
+    private Fields fieldsExt = null;
+    private Fields outFieldsExt = null;
+    private List<Integer> targetTasksExt;
 
     public PriceDiffCustomStreamGrouping(Fields fields, List<String> whiteList) {
         super(fields);
-        this.fieldsx = fields;
+        this.fieldsExt = fields;
         this.whiteList = whiteList;
     }
 
     @Override
     public void prepare(WorkerTopologyContext context, GlobalStreamId stream, List<Integer> targetTasks) {
         super.prepare(context,stream,targetTasks);
-        if (this.fieldsx != null) {
-            this.outFieldsx = context.getComponentOutputFields(stream);
+        if (this.fieldsExt != null) {
+            this.outFieldsExt = context.getComponentOutputFields(stream);
         }
-        this.targetTasksx = targetTasks;
+        this.targetTasksExt = targetTasks;
     }
 
     @Override
     public List<Integer> chooseTasks(int taskId, List<Object> values) {
-        if (fieldsx!= null){
-            List<Object> selectedFields = outFieldsx.select(fieldsx, values);
+        if (fieldsExt != null){
+            List<Object> selectedFields = outFieldsExt.select(fieldsExt, values);
 
             /**
              * 白名单
              */
             if (selectedFields!=null&&whiteList.contains(selectedFields.get(0))){
-                return targetTasksx;
+                return targetTasksExt;
             }
         }
         return super.chooseTasks(taskId, values);
