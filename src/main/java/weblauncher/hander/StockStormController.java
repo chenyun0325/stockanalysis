@@ -11,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import stormpython.*;
 import stormpython.rule.RuleConfig;
+import stormpython.rule.WarnRuleConfig;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
@@ -53,8 +54,11 @@ public class StockStormController {
       String[] stockIndexArray = Constant.stock_index_code.split(",");
       List<String> stockIndexList = Arrays.asList(stockIndexArray);
 
-      builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(10,2,5,15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
-      builder.setBolt("rankBolt",new GlobalRankBolt(10,2,5,30,15)).globalGrouping("similarityBolt");
+      WarnRuleConfig warnRuleConfig = WarnRuleConfig.builder().offset(2).priceWarnLevel(0.02d).build();
+      WarnRuleConfig warnRuleConfig1 = WarnRuleConfig.builder().offset(5).priceWarnLevel(0.03d).build();
+
+      builder.setBolt("similarityBolt",new SimilarityTrendFlagCountSWBolt(Lists.newArrayList(warnRuleConfig,warnRuleConfig1),query.getWind_size(),15),2).customGrouping("FsRealSpout","diff",new PriceDiffCustomStreamGrouping(new Fields("code"),stockIndexList));
+      builder.setBolt("rankBolt",new GlobalRankBolt(query.getWind_size(),15,30,3,Lists.newArrayList(warnRuleConfig,warnRuleConfig1))).globalGrouping("similarityBolt");
 
       Config conf = new Config();
       conf.put(Config.TOPOLOGY_DEBUG, false);

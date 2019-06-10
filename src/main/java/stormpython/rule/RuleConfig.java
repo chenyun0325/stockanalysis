@@ -14,14 +14,18 @@ public class RuleConfig implements Serializable {
 
     private String stockCode;
     /**
-     * 评估出合理比例
+     * 评估出合理压单托单金额
      */
     private double filter_mount;
+
+    /**
+     * 评估出合理比例
+     */
 
     private double filter_per;
 
     /**
-     * 评估出合理压单金额
+     * 评估出合理夹单金额
      */
     private double mount;
     /**

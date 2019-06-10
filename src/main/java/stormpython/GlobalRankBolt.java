@@ -1,6 +1,7 @@
 package stormpython;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.Maps;
 import datacrawler.Constant;
 import fsanalysis.DateUtil;
 import fsrealanalysis.SimilarityRes;
@@ -318,7 +319,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
         List<Map.Entry<String, SimilarityRes>> list = new ArrayList<>(lastSimilarityMap.entrySet());
 
-        list = list.stream().filter(i -> i.getValue().getSimilarityMap().get(sortKey) != null)
+        list = list.stream().filter(i -> i.getValue().getSimilarityMap().get(sortKey) != null && i.getValue().getSimilarityMap().get(sortKey) != 0d)
                 .collect(Collectors.toList());
 
         Collections.sort(list, (o1, o2) -> {
@@ -354,7 +355,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
         list = list.stream().filter(i -> {
             List<Double> countList = i.getValue().getTrendMap().get(sortKey);
             return countList != null&& !countList.isEmpty()
-         &&countList.size()>indexPos&& countList.get(indexPos)!=null;
+         &&countList.size()>indexPos&& countList.get(indexPos)!=null&&countList.get(indexPos)!=0d;
         }).collect(Collectors.toList());
 
         Collections.sort(list, (o1, o2) -> {
@@ -498,9 +499,14 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 if (isSimSort){
                     List<Map.Entry<String, SimilarityRes>> sortSimilarityTopN =
                             sortSimilarityTopN(map, keyOffset, topN, ascending);
+                    List<AbstractMap.SimpleEntry> sortSimilarityTopNTransfer = sortSimilarityTopN.stream().map(i -> {
+                        Double sortIndex = i.getValue().getSimilarityMap().get(keyOffset);
+                        AbstractMap.SimpleEntry entry = new AbstractMap.SimpleEntry(i.getKey(), sortIndex);
+                        return entry;
+                    }).collect(Collectors.toList());
                     String keyOffsetAscending = Joiner.on("_").join(keyOffset, ascending);
                     String fileName = rk_file_thread + "_" + keyOffsetAscending + "_" + dateStr + ".txt";
-                   printResThread(fileName,sortSimilarityTopN,false);
+                   printResSimpleThread(fileName,sortSimilarityTopNTransfer,false);
 
                 }else{
                     /**
@@ -510,9 +516,18 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
                         List<Map.Entry<String, SimilarityRes>> sortTrendCountTopN=sortTrendCountTopN(map,keyOffset,i,topN,ascending);
 
+                        int k = i;
+                        List<AbstractMap.SimpleEntry> sortTrendCountTopNTransfer = sortTrendCountTopN.stream().map(j -> {
+
+                            Double sortIndex = j.getValue().getTrendMap().get(keyOffset).get(k);
+
+                            AbstractMap.SimpleEntry entry = new AbstractMap.SimpleEntry(j.getKey(), sortIndex);
+                            return entry;
+                        }).collect(Collectors.toList());
+
                         Object[] joinArray = {i,ascending,dateStr,".txt"};
 
-                        printResThread(Joiner.on("_").join(rk_file_thread,keyOffset, joinArray),sortTrendCountTopN,false);
+                        printResSimpleThread(Joiner.on("_").join(rk_file_thread,keyOffset, joinArray),sortTrendCountTopNTransfer,false);
 
                     }
                 }
@@ -530,6 +545,35 @@ public class GlobalRankBolt extends BaseBasicBolt {
             for (Map.Entry<String, SimilarityRes> entry : topNRes) {
                 String stockCode = entry.getKey();
                 SimilarityRes sortValue = entry.getValue();
+                String json = JSONObject.fromObject(sortValue).toString();
+                String item = stockCode + ":" + "@" + "time:" + time + "@" + "content:" + json;
+                bfw.write(item);
+                bfw.newLine();
+            }
+            bfw.flush();
+
+        } catch (IOException e) {
+            log_error.error("create file error", e);
+        } finally {
+            try {
+                bfw.close();
+                fw.close();
+            } catch (IOException e) {
+                log_error.error("close file error:", e);
+            }
+        }
+    }
+
+    public void printResSimpleThread(String fileName, List<AbstractMap.SimpleEntry> topNRes, boolean appendFlag) {
+        FileWriter fw = null;
+        BufferedWriter bfw = null;
+        try {
+            fw = new FileWriter(fileName, appendFlag);
+            bfw = new BufferedWriter(fw);
+            long time = System.currentTimeMillis();
+            for (Map.Entry<String, Double> entry : topNRes) {
+                String stockCode = entry.getKey();
+                Double sortValue = entry.getValue();
                 String json = JSONObject.fromObject(sortValue).toString();
                 String item = stockCode + ":" + "@" + "time:" + time + "@" + "content:" + json;
                 bfw.write(item);

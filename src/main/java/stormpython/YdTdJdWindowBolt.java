@@ -47,7 +47,7 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
     /**
      * key:业务规则,value:股票集合
      */
-    static Map<String, Set<String>> ruleStockSetMap = new HashMap<>();
+    static Map<String, Set<String>> ruleStockSetMap = new ConcurrentHashMap<>();
 
     Map<String, String> code_hash_map = new ConcurrentHashMap<>();// 存储上一个股票的分时hash,防止同一个数据进入多次
 
@@ -149,7 +149,7 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
                 JSONObject item_json = JSONObject.fromObject(item);
                 FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
                 // 添加异步db数据存储
-                // fsPKQueue.put(fsdata);
+                //fsPkQueue.put(fsdata);
                 /**
                  * 数据去重
                  */
