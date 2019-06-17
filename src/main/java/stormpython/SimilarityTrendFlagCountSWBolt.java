@@ -501,7 +501,7 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                         /**
                          * 逆势打压
                          */
-                        a2 = a2 + v / vAvg * stock[i];
+                        a2 = a2 + v / vAvg * stock[i]*-1;
                     }
                 } else {
 
@@ -523,10 +523,10 @@ public class SimilarityTrendFlagCountSWBolt extends BaseBasicBolt {
                          * 弱势 ----涨不过大盘或者跌超过大盘
                          */
                         if (vAvg != 0d) {
-                            a4 = a4 + v / vAvg * (stock[i] - index[i]);
-                        }
+                            a4 = a4 + v / vAvg * (stock[i] - index[i])*-1;
+                        }else
                         {
-                            a4 = a4 + (stock[i] - index[i]);
+                            a4 = a4 + (stock[i] - index[i])*-1;
                         }
                     }
 

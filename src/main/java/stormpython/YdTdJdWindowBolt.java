@@ -149,7 +149,7 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
                 JSONObject item_json = JSONObject.fromObject(item);
                 FsData fsdata = (FsData) JSONObject.toBean(item_json, FsData.class);
                 // 添加异步db数据存储
-                //fsPkQueue.put(fsdata);
+                // fsPkQueue.put(fsdata);
                 /**
                  * 数据去重
                  */
@@ -170,12 +170,14 @@ public class YdTdJdWindowBolt extends BaseBasicBolt {
                     /**
                      * 停牌or涨跌停
                      */
-                    if (!indexRes.isTpFlag() && !indexRes.isZdtFlag()) {
+                    if (indexRes.isZdtFlag()) {
                         if (price_dif > 0) {
-                          ruleStockData(ruleStockSetMap, RuleConfigConstant.ztRuleKey,code);
+                            ruleStockData(ruleStockSetMap, RuleConfigConstant.ztRuleKey, code);
                         } else {
-                          ruleStockData(ruleStockSetMap,RuleConfigConstant.dtRuleKey,code);
+                            ruleStockData(ruleStockSetMap, RuleConfigConstant.dtRuleKey, code);
                         }
+                    } else if (indexRes.isTpFlag()) {
+                        ruleStockData(ruleStockSetMap, RuleConfigConstant.tpRuleKey, code);
                     } else {
                         /**
                          * 多业务规则

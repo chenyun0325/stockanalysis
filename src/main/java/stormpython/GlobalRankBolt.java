@@ -1,7 +1,6 @@
 package stormpython;
 
 import com.google.common.base.Joiner;
-import com.google.common.collect.Maps;
 import datacrawler.Constant;
 import fsanalysis.DateUtil;
 import fsrealanalysis.SimilarityRes;
@@ -324,11 +323,12 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
         Collections.sort(list, (o1, o2) -> {
             if (ascending) {
-                return o2.getValue().getSimilarityMap().get(sortKey)
-                        .compareTo(o1.getValue().getSimilarityMap().get(sortKey));
-            } else {
                 return o1.getValue().getSimilarityMap().get(sortKey)
                         .compareTo(o2.getValue().getSimilarityMap().get(sortKey));
+            } else {
+                return o2.getValue().getSimilarityMap().get(sortKey)
+                        .compareTo(o1.getValue().getSimilarityMap().get(sortKey));
+
 
             }
         });
@@ -360,11 +360,12 @@ public class GlobalRankBolt extends BaseBasicBolt {
 
         Collections.sort(list, (o1, o2) -> {
             if (ascending) {
-                return o2.getValue().getTrendMap().get(sortKey).get(indexPos)
-                        .compareTo(o1.getValue().getTrendMap().get(sortKey).get(indexPos));
-            } else {
                 return o1.getValue().getTrendMap().get(sortKey).get(indexPos)
                         .compareTo(o2.getValue().getTrendMap().get(sortKey).get(indexPos));
+            } else {
+                return o2.getValue().getTrendMap().get(sortKey).get(indexPos)
+                        .compareTo(o1.getValue().getTrendMap().get(sortKey).get(indexPos));
+
 
             }
         });
@@ -546,7 +547,7 @@ public class GlobalRankBolt extends BaseBasicBolt {
                 String stockCode = entry.getKey();
                 SimilarityRes sortValue = entry.getValue();
                 String json = JSONObject.fromObject(sortValue).toString();
-                String item = stockCode + ":" + "@" + "time:" + time + "@" + "content:" + json;
+                String item = stockCode + ":" + "@" + "time:" + time + ":@" + "content:" + json;
                 bfw.write(item);
                 bfw.newLine();
             }
@@ -574,8 +575,8 @@ public class GlobalRankBolt extends BaseBasicBolt {
             for (Map.Entry<String, Double> entry : topNRes) {
                 String stockCode = entry.getKey();
                 Double sortValue = entry.getValue();
-                String json = JSONObject.fromObject(sortValue).toString();
-                String item = stockCode + ":" + "@" + "time:" + time + "@" + "content:" + json;
+                String json = sortValue.toString();
+                String item = stockCode + ":" + "@" + "time:" + time + ":@" + "content:" + json;
                 bfw.write(item);
                 bfw.newLine();
             }

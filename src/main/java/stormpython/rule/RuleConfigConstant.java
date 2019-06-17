@@ -9,6 +9,8 @@ public class RuleConfigConstant {
 
     public static final String dtRuleKey = "dtRuleKey";
 
+    public static final String tpRuleKey = "tpRuleKey";
+
     public static final String priceDiffUp = "priceDiffUp";
 
     public static final String priceDiffDown = "priceDiffDown";
