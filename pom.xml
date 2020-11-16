@@ -15,7 +15,7 @@
         <mysql-connector-java_version>5.1.30</mysql-connector-java_version>
         <druid_version>1.0.13</druid_version>
         <sharding-jdbc_version>1.4.1</sharding-jdbc_version>
-        <jettyVersion>	9.2.20.v20161216</jettyVersion>
+        <jettyVersion>9.4.34.v20201102</jettyVersion>
     </properties>
 
     <dependencies>
