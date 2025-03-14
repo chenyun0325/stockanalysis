@@ -39,7 +39,7 @@ def fs_load_batch(code_list=None,start=None,end=None,table_name=None):
                 if (fs_df is not None)&(len(fs_df.index)>4):#没有数据情况返回
                     res= tp.save_db(data=fs_df,table_name=table_name,con=sql.engine,flag='append')
                 result.append(res)
-            except Exception,e:
+            except Exception as e:
                 log.error(code)
                 log.error(first)
                 log.error(last)
@@ -61,7 +61,7 @@ def fs_load_batch_v(code_list=None,start=None,end=None):
                 fs_df=fs_load(code,date_str)
                 if (fs_df is not None)&(len(fs_df.index)>4):#没有数据情况返回
                     result.append(fs_df)
-            except Exception,e:
+            except Exception as e:
                 log.error(code)
                 log.error(first)
                 log.error(last)
@@ -85,7 +85,7 @@ if __name__ == '__main__':
             json_dic['amount'] = row['amount']
             json_dic['type'] = row['type']
             json_str=json.dumps(json_dic)
-            print json_str
+            print(json_str)
 
 
 

@@ -22,7 +22,7 @@ class FsRealSpout(storm.Spout):
     def initialize(self, conf, context):
         self._conf = conf
         self._context = context
-
+        ts.set_token('9f5df7a7a7e59b32e1c98fecc44e15628ac3697be97282d521dd3be1')
         storm.logInfo("Spout instance starting...")
 
     # Process the next tuple
@@ -88,7 +88,7 @@ class FsRealSpout(storm.Spout):
                      #storm.logInfo("Emiting code:%s row:%s" %(code,json))
                      storm.emit([code,json])
                flag=True
-           except Exception,e:
+           except Exception as e:
                 log.error(traceback.print_exc())
                 log.error(e)
 
